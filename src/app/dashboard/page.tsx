@@ -101,7 +101,7 @@ export default function DashboardPage() {
                 </h1>
               </div>
               <p className="text-on-surface-variant text-sm">
-                Your personal study area in the Law by Grace library.
+                Your personal study area in THE LAW With Gracious library.
               </p>
             </div>
             <div className="flex items-center gap-2">

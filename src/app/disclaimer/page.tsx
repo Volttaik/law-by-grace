@@ -4,7 +4,7 @@ import InfoLayout, { Section } from "@/components/layout/InfoLayout";
 export const metadata: Metadata = {
   title: "Legal Disclaimer",
   description:
-    "Law by Grace is an educational platform. Its content is general legal information, not personalised legal advice.",
+    "THE LAW With Gracious is an educational platform. Its content is general legal information, not personalised legal advice.",
 };
 
 export default function DisclaimerPage() {
@@ -12,12 +12,12 @@ export default function DisclaimerPage() {
     <InfoLayout
       eyebrow="Legal"
       title="Legal Disclaimer"
-      lede="Please read this before relying on anything you find on Law by Grace."
+      lede="Please read this before relying on anything you find on THE LAW With Gracious."
       updated="September 2026"
     >
       <Section title="Educational information, not legal advice">
         <p>
-          Law by Grace is an educational and informational platform. The
+          THE LAW With Gracious is an educational and informational platform. The
           courses, books, PDFs, articles and other materials available here are
           provided to help people understand legal concepts, study law and
           learn more about how legal systems work.
@@ -65,9 +65,9 @@ export default function DisclaimerPage() {
 
       <Section title="No warranty">
         <p>
-          Law by Grace makes every effort to curate accurate and useful
+          THE LAW With Gracious makes every effort to curate accurate and useful
           material, but the platform is provided &ldquo;as is&rdquo;. To the
-          maximum extent permitted by law, Law by Grace gives no warranty that
+          maximum extent permitted by law, THE LAW With Gracious gives no warranty that
           the content is accurate, complete, current or fit for any particular
           purpose.
         </p>

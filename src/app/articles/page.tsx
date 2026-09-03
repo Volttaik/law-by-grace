@@ -131,7 +131,7 @@ export default function ArticlesPage() {
             </div>
             <h2 className="text-lg font-bold font-manrope text-on-surface mb-2">{tab === "mine" ? "No articles yet" : "No articles found"}</h2>
             <p className="text-sm text-on-surface-variant mb-6 max-w-xs mx-auto">
-              {tab === "mine" ? "Draft your first article in the Law by Grace editor." : "Articles from the Law by Grace community will appear here."}
+              {tab === "mine" ? "Draft your first article in the editor on THE LAW With Gracious." : "Articles from THE LAW With Gracious community will appear here."}
             </p>
             <Link href="/editor" className="btn-primary inline-flex items-center">
               <PenLine className="h-4 w-4" /> Write an Article

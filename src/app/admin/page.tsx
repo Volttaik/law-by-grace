@@ -475,10 +475,10 @@ export default function AdminPage() {
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+              <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
             </div>
             <div className="leading-tight">
-              <p className="font-serif font-bold text-[15px] text-on-surface leading-none">Law by Grace</p>
+              <p className="font-serif font-bold text-[15px] text-on-surface leading-none">THE LAW With Gracious</p>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary mt-1">Library Admin</p>
             </div>
           </Link>
@@ -532,10 +532,10 @@ export default function AdminPage() {
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+              <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
             </div>
             <div className="leading-tight">
-              <p className="font-serif font-bold text-sm text-on-surface leading-none">Law by Grace</p>
+              <p className="font-serif font-bold text-sm text-on-surface leading-none">THE LAW With Gracious</p>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary mt-0.5">Library Admin</p>
             </div>
             <Link href="/dashboard" className="ml-auto text-xs text-on-surface-variant hover:text-primary px-2 py-1">Exit</Link>
@@ -568,7 +568,7 @@ export default function AdminPage() {
                 {greeting()}, {session.user?.name?.split(" ")[0]}
               </h1>
               <p className="text-sm text-on-surface-variant mt-1">
-                Manage the Law by Grace library — courses, materials, articles and readers.
+                Manage THE LAW With Gracious library — courses, materials, articles and readers.
               </p>
             </div>
             <Link href="/dashboard" className="text-xs font-medium text-on-surface-variant hover:text-primary transition-colors">

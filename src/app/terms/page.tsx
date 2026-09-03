@@ -5,7 +5,7 @@ import { SUPPORT_EMAIL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "The terms that apply when you use the Law by Grace legal e-library and study platform.",
+    "The terms that apply when you use THE LAW With Gracious legal e-library and study platform.",
 };
 
 export default function TermsPage() {
@@ -13,12 +13,12 @@ export default function TermsPage() {
     <InfoLayout
       eyebrow="Legal"
       title="Terms of Service"
-      lede="These terms govern your use of the Law by Grace platform. By creating an account or using the library you agree to them."
+      lede="These terms govern your use of the platform of THE LAW With Gracious. By creating an account or using the library you agree to them."
       updated="September 2026"
     >
       <Section title="The service">
         <p>
-          Law by Grace is an educational e-library and study platform. It
+          THE LAW With Gracious is an educational e-library and study platform. It
           provides access to legal courses, books, PDFs, documents, videos and
           articles for personal study and reference. The service is provided
           &ldquo;as is&rdquo; and &ldquo;as available&rdquo;.
@@ -62,7 +62,7 @@ export default function TermsPage() {
       <Section title="User-submitted content">
         <p>
           When you publish articles or other content to the platform, you keep
-          ownership of your work and grant Law by Grace a limited licence to
+          ownership of your work and grant THE LAW With Gracious a limited licence to
           host, display and distribute it as part of the service. You confirm
           that content you submit is yours or that you have the right to share
           it.
@@ -75,8 +75,9 @@ export default function TermsPage() {
 
       <Section title="Intellectual property">
         <p>
-          The Law by Grace name, branding, platform design and the original
-          courses and materials published by Law by Grace are the property of
+          The name &ldquo;THE LAW With Gracious&rdquo;, its branding, platform
+          design and the original courses and materials published by THE LAW
+          With Gracious are the property of
           their respective owners. Unauthorised reproduction or distribution
           of content you do not own may violate copyright (see our{" "}
           <a href="/copyright" className="text-secondary hover:text-primary transition-colors">copyright page</a>).
@@ -103,7 +104,7 @@ export default function TermsPage() {
 
       <Section title="Limitation of liability">
         <p>
-          To the maximum extent permitted by law, Law by Grace is not liable
+          To the maximum extent permitted by law, THE LAW With Gracious is not liable
           for indirect or consequential losses arising from your use of the
           platform, including reliance on its educational content. Nothing in
           these terms limits liability that cannot be limited by law.

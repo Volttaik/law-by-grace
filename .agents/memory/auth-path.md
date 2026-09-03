@@ -3,7 +3,7 @@ name: Auth file path
 description: Where auth.ts lives and why, to avoid broken @/auth imports
 ---
 
-NextAuth v5 config lives at `src/auth.ts` (project root of Law by Grace).
+NextAuth v5 config lives at `src/auth.ts` (project root of THE LAW With Gracious app).
 
 **Why:** `tsconfig.json` sets `"@/*": ["./src/*"]`, so `@/auth` resolves to `src/auth.ts`. Middleware at `src/middleware.ts` and all API routes import `{ auth }` from `@/auth`.
 

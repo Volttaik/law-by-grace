@@ -86,7 +86,7 @@ export default function Navbar() {
       </div>
       <div className="leading-none">
         <span className={cn("font-serif font-bold tracking-tight", small ? "text-base" : "text-lg", "text-on-surface")}>
-          Law by Grace
+          THE LAW With Gracious
         </span>
       </div>
     </Link>

@@ -4,7 +4,7 @@ import InfoLayout, { Section } from "@/components/layout/InfoLayout";
 export const metadata: Metadata = {
   title: "Cookie Policy",
   description:
-    "The cookies and local storage Law by Grace actually uses — and what it does not use.",
+    "The cookies and local storage THE LAW With Gracious actually uses — and what it does not use.",
 };
 
 export default function CookiesPage() {
@@ -12,12 +12,12 @@ export default function CookiesPage() {
     <InfoLayout
       eyebrow="Legal"
       title="Cookie Policy"
-      lede="A short, accurate account of the storage technologies Law by Grace uses."
+      lede="A short, accurate account of the storage technologies THE LAW With Gracious uses."
       updated="September 2026"
     >
       <Section title="What we use">
         <p>
-          Law by Grace keeps things minimal. The platform uses exactly two
+          THE LAW With Gracious keeps things minimal. The platform uses exactly two
           kinds of browser storage:
         </p>
         <ul className="list-disc pl-5 space-y-1.5">
@@ -37,7 +37,7 @@ export default function CookiesPage() {
 
       <Section title="What we do not use">
         <p>
-          Law by Grace does not run advertising, third-party analytics,
+          THE LAW With Gracious does not run advertising, third-party analytics,
           marketing trackers, social widgets or cross-site tracking scripts,
           and it does not sell or share data for advertising purposes.
         </p>

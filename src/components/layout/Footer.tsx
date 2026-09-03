@@ -31,9 +31,9 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+                <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
               </div>
-              <span className="font-serif font-bold text-lg text-white tracking-tight">Law by Grace</span>
+              <span className="font-serif font-bold text-lg text-white tracking-tight">THE LAW With Gracious</span>
             </div>
             <p className="text-sm text-white/70 leading-relaxed max-w-xs">
               A beautiful e-library for law — courses, books, PDFs, videos and articles to help you understand law and study effectively.
@@ -41,7 +41,7 @@ export default function Footer() {
             <div className="flex items-center gap-3 pt-2">
               <a
                 href="mailto:hello@lawbygrace.app"
-                aria-label="Email Law by Grace"
+                aria-label="Email THE LAW With Gracious"
                 className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center hover:bg-white/25 transition-colors"
               >
                 <Mail className="w-4 h-4 text-white" />
@@ -71,7 +71,7 @@ export default function Footer() {
 
         <div className="border-t border-white/15 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-white/60">
-            © {new Date().getFullYear()} Law by Grace. An open legal e-library for students and readers.
+            © {new Date().getFullYear()} THE LAW With Gracious. An open legal e-library for students and readers.
           </p>
           <p className="text-sm text-white/60">
             Knowledge of the law, for everyone.

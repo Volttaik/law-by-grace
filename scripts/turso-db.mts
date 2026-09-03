@@ -1,5 +1,5 @@
 /**
- * Law by Grace · Turso database utilities
+ * THE LAW With Gracious · Turso database utilities
  *
  * The provided Turso database is shared with another project. This tool
  * NEVER touches tables outside the `law_by_grace_*` namespace:
@@ -80,7 +80,7 @@ async function inspect() {
     console.log(`Tables/indexes total: ${names.length}`);
     console.log(`Other project objects (UNTOUCHED): ${other.length}`);
     console.log(`  ${other.join(", ") || "(none)"}`);
-    console.log(`Law by Grace objects: ${lbg.length}`);
+    console.log(`THE LAW With Gracious objects: ${lbg.length}`);
     console.log(`  ${lbg.join(", ") || "(none)"}`);
   } finally {
     client.close();
@@ -150,7 +150,7 @@ async function verify() {
       .filter((n) => !expectedTables.some((t) => t.name === n))
       .sort();
 
-    console.log("── Law by Grace schema audit (read-only) ────────────────");
+    console.log("── THE LAW With Gracious schema audit (read-only) ────────────────");
     console.log(`Expected tables: ${expectedTables.length}, indexes: ${expectedIndexes.length}`);
     console.log(`Live law_by_grace_ tables: ${liveLbgTables.length}`);
     console.log(`Missing tables: ${missingTables.length ? missingTables.join(", ") : "(none)"}`);
@@ -202,7 +202,7 @@ function generateDdl(): string {
 }
 
 /**
- * Create (or verify) the Law by Grace administrator account.
+ * Create (or verify) THE LAW With Gracious administrator account.
  * Credentials come from LAW_BY_GRACE_ADMIN_EMAIL / _PASSWORD / _NAME env vars.
  */
 async function ensureAdmin() {
@@ -272,7 +272,7 @@ async function init() {
       "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'law_by_grace_%' ORDER BY name"
     );
     const tables = rows.map((r: any) => String(r.name));
-    console.log(`Law by Grace tables present: ${tables.length}`);
+    console.log(`THE LAW With Gracious tables present: ${tables.length}`);
     console.log(`  ${tables.join(", ")}`);
     console.log("Init complete. No non-law_by_grace objects were modified.");
   } finally {

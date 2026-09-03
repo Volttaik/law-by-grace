@@ -92,7 +92,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <h2 className="font-serif font-bold text-2xl text-on-surface">Profile not found</h2>
-          <p className="text-on-surface-variant">{error || `@${username} doesn't exist on Law by Grace.`}</p>
+          <p className="text-on-surface-variant">{error || `@${username} doesn't exist on THE LAW With Gracious.`}</p>
           <Link href="/explore" className="btn-primary">Explore the library</Link>
         </div>
         <Footer />
@@ -324,7 +324,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
                   <p className="text-sm text-on-surface-variant leading-relaxed">
                     {isOwnProfile
                       ? "Start exploring the library — saved courses will appear here."
-                      : `${firstName} is a member of the Law by Grace library.`}
+                      : `${firstName} is a member of THE LAW With Gracious library.`}
                   </p>
                 )}
                 {memberRows.map(stat => (

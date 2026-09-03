@@ -1,10 +1,10 @@
 /**
- * Law by Grace · Database migration to the Law by Grace data model
+ * THE LAW With Gracious · Database migration to THE LAW With Gracious data model
  *
  * The law_by_grace_* tables were previously a renamed copy of the old
  * project's (Mantra/Mentra) model — stacks, stack_files, stack_stars,
  * follows, purchases, agents, communities, DMs, etc. This migration
- * restructures ONLY the law_by_grace_* namespace into the real Law by Grace
+ * restructures ONLY the law_by_grace_* namespace into the real THE LAW With Gracious
  * model (courses, materials, modules, saved courses, articles, …) and drops
  * the legacy social/marketplace tables.
  *
@@ -105,7 +105,7 @@ async function dropColumn(client: any, table: string, column: string) {
   } catch (err: any) {
     // A column pinned by a legacy FK definition (e.g. a self-referential
     // fork) cannot be dropped without rebuilding the table. The column is
-    // unused by Law by Grace — Prisma only ever reads/writes the columns in
+    // unused by THE LAW With Gracious — Prisma only ever reads/writes the columns in
     // the schema — so leaving it in place is safe.
     console.warn(`  kept column ${table}.${column} (blocked by legacy FK: ${err?.message ?? err})`);
   }
@@ -159,10 +159,10 @@ async function main() {
   const before = await tableNames(client);
   const otherProject = before.filter((n) => !n.startsWith(PREFIX));
 
-  console.log("── Law by Grace migration ────────────────────────────────");
+  console.log("── THE LAW With Gracious migration ────────────────────────────────");
   console.log(`Tables found: ${before.length} (other-project: ${otherProject.length})`);
 
-  // 1. Rename the core tables into the Law by Grace model (data preserved).
+  // 1. Rename the core tables into THE LAW With Gracious model (data preserved).
   console.log("Rename core tables…");
   await renameTable(client, `${PREFIX}stacks`, `${PREFIX}courses`);
   await renameTable(client, `${PREFIX}stack_files`, `${PREFIX}materials`);
@@ -257,7 +257,7 @@ async function main() {
 
   console.log("───────────────────────────────────────────────────────────");
   console.log(`Other-project tables (UNTOUCHED): ${otherAfter.length}`);
-  console.log(`Law by Grace tables: ${lbg.length}`);
+  console.log(`THE LAW With Gracious tables: ${lbg.length}`);
   console.log(`  ${lbg.join(", ")}`);
   console.log("Migration complete.");
   client.close();

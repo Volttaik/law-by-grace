@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
- * Full-screen Law by Grace transition overlay.
+ * Full-screen THE LAW With Gracious transition overlay.
  *
  * Used during authentication transitions (login → app, registration →
  * verification → authenticated app) so the app never shows a half-authenticated
@@ -39,7 +39,7 @@ export default function TransitionOverlay({
             className="w-14 h-14 rounded-2xl overflow-hidden shadow-elevation-md"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+            <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
           </motion.div>
           <div className="spinner spinner-lg" />
           <p className="text-sm font-medium text-on-surface-variant">{message}</p>

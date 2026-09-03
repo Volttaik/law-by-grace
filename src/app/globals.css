@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 /* ──────────────────────────────────────────────────────────────
-   LAW BY GRACE — DESIGN TOKENS
+   THE LAW WITH GRACIOUS — DESIGN TOKENS
    Cool, academic palette. Layered surfaces with real depth:
    background → container-low → container → high → highest.
    Blue is reserved for primary actions, links and key accents.
@@ -239,7 +239,7 @@ h1, h2, h3, h4, h5, h6 {
     backdrop-filter: blur(14px) saturate(1.15);
   }
 
-  /* Law by Grace brand helpers */
+  /* THE LAW With Gracious brand helpers */
   .bg-brand {
     background: linear-gradient(140deg, #10295f 0%, #1d4ed8 52%, #2e5ff2 100%);
   }

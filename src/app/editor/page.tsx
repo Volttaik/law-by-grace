@@ -108,7 +108,7 @@ function PublishDialog({ onClose, onPublish, saving }: { onClose: () => void; on
             <label className="text-sm font-medium text-on-surface block mb-1.5">Tags (comma separated)</label>
             <input value={tags} onChange={e => setTags(e.target.value)} placeholder="e.g. family-law, custody, human-rights" className="input-field" />
           </div>
-          <p className="text-xs text-on-surface-variant">Articles are free to read — part of the open Law by Grace library.</p>
+          <p className="text-xs text-on-surface-variant">Articles are free to read — part of the open library of THE LAW With Gracious.</p>
           <button onClick={() => onPublish({ title, summary, tags })} disabled={!title.trim() || saving} className="btn-primary w-full py-3 text-sm gap-2">
             {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Publishing…</> : <><Sparkles className="h-4 w-4" /> Publish Edition</>}
           </button>

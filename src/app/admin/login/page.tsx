@@ -55,10 +55,10 @@ export default function AdminLoginPage() {
         <div className="flex items-center justify-center gap-3 mb-9">
           <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow-elevation-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+            <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
           </div>
           <div className="text-left">
-            <p className="font-serif font-bold text-lg text-on-surface leading-tight tracking-tight">Law by Grace</p>
+            <p className="font-serif font-bold text-lg text-on-surface leading-tight tracking-tight">THE LAW With Gracious</p>
             <p className="text-xs text-on-surface-variant">Library Admin Portal</p>
           </div>
         </div>

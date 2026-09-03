@@ -398,7 +398,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 bg-surface-container-lowest/80 backdrop-blur-sm text-on-surface-variant px-4 py-2 rounded-full text-xs font-semibold mb-8 border border-outline-variant/40 shadow-sm"
             >
               <Scale className="w-3.5 h-3.5 text-secondary" />
-              Welcome to the Law by Grace e-library
+              Welcome to THE LAW With Gracious e-library
             </motion.div>
 
             <h1 className="font-serif font-bold text-4xl md:text-[3rem] text-on-surface leading-[1.1] tracking-tight mb-5">
@@ -535,7 +535,7 @@ export default function HomePage() {
                 A calm e-library, curated for students of the law
               </h2>
               <p className="text-on-surface-variant leading-relaxed mb-5 text-base">
-                Law by Grace brings legal educational materials together in one place — courses, books,
+                THE LAW With Gracious brings legal educational materials together in one place — courses, books,
                 PDFs, judgements, lectures and study guides — organised clearly and easy to reach.
               </p>
               <p className="text-on-surface-variant leading-relaxed text-base mb-8">
@@ -730,7 +730,7 @@ export default function HomePage() {
           >
             <div className="w-14 h-14 rounded-xl overflow-hidden mx-auto mb-8 shadow-elevation-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+              <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
             </div>
 
             <h2 className="font-serif font-bold text-4xl md:text-5xl text-on-surface leading-tight mb-5">
@@ -739,7 +739,7 @@ export default function HomePage() {
               the calm way.
             </h2>
             <p className="text-on-surface-variant text-lg mb-10 leading-relaxed">
-              Join Law by Grace and step into a beautiful library built for understanding the law —
+              Join THE LAW With Gracious and step into a beautiful library built for understanding the law —
               free to browse, free to read.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

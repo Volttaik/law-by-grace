@@ -92,7 +92,7 @@ function FeedCard({ course, index }: { course: Course; index: number }) {
             </h3>
 
             <p className="text-xs text-on-surface-variant leading-relaxed mb-4 line-clamp-2">
-              {course.description || "Course materials from the Law by Grace library."}
+              {course.description || "Course materials from THE LAW With Gracious library."}
             </p>
 
             {course.tags.length > 0 && (
@@ -245,7 +245,7 @@ export default function ExplorePage() {
         <div className="max-w-[1200px] mx-auto px-4 md:px-6">
           <div className="max-w-2xl mx-auto text-center mb-7">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary bg-secondary-container/60 px-3 py-1 rounded-full border border-secondary/15 mb-4">
-              <Library className="w-3.5 h-3.5" /> The Law by Grace library
+              <Library className="w-3.5 h-3.5" /> THE LAW With Gracious library
             </span>
             <h1 className="font-serif font-bold text-2xl md:text-3xl text-on-surface mb-2">
               Discover legal courses &amp; resources

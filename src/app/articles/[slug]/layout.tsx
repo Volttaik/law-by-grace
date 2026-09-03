@@ -10,8 +10,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const article = await res.json();
     if (article.error) throw new Error(article.error);
 
-    const title = `${article.title} — Law by Grace`;
-    const description = article.summary ?? "A legal article on Law by Grace.";
+    const title = `${article.title} — THE LAW With Gracious`;
+    const description = article.summary ?? "A legal article on THE LAW With Gracious.";
     const image = article.coverImage ?? "/icons/icon-192.png";
 
     return {
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         title,
         description,
         type: "article",
-        siteName: "Law by Grace",
+        siteName: "THE LAW With Gracious",
         images: [{ url: image, width: 1200, height: 630, alt: article.title }],
         authors: article.author?.name ? [article.author.name] : [],
       },
@@ -34,8 +34,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
   } catch {
     return {
-      title: "Article — Law by Grace",
-      description: "Read this legal article on Law by Grace.",
+      title: "Article — THE LAW With Gracious",
+      description: "Read this legal article on THE LAW With Gracious.",
     };
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Law by Grace · shared upload policy.
+ * THE LAW With Gracious · shared upload policy.
  *
  * Used by every material upload path so the rules can never drift:
  *  - the classic multipart POST /api/courses/[slug]/files

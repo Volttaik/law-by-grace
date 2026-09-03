@@ -5,7 +5,7 @@ import { SUPPORT_EMAIL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "How Law by Grace handles the information you share: accounts, saved courses, your articles and the data stored to run the library.",
+    "How THE LAW With Gracious handles the information you share: accounts, saved courses, your articles and the data stored to run the library.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
     <InfoLayout
       eyebrow="Legal"
       title="Privacy Policy"
-      lede="This policy explains what information Law by Grace collects, why it is collected, and how it is stored and protected. It describes the platform as it actually works."
+      lede="This policy explains what information THE LAW With Gracious collects, why it is collected, and how it is stored and protected. It describes the platform as it actually works."
       updated="September 2026"
     >
       <Section title="Information you provide">
@@ -55,7 +55,7 @@ export default function PrivacyPolicyPage() {
         <p>
           Basic server logs (such as request times and error details) may be
           retained by our hosting provider to keep the service running and
-          secure. Law by Grace does not run third-party advertising, analytics
+          secure. THE LAW With Gracious does not run third-party advertising, analytics
           or tracking scripts, and does not sell or share personal data with
           advertisers.
         </p>
@@ -71,7 +71,7 @@ export default function PrivacyPolicyPage() {
           <li>
             <strong className="text-on-surface">File storage —</strong> uploaded
             documents, PDFs, videos and images are stored in Cloudflare R2
-            object storage under the Law by Grace key space.
+            object storage under the platform&apos;s dedicated key space.
           </li>
           <li>
             <strong className="text-on-surface">Email processing —</strong>
@@ -125,7 +125,7 @@ export default function PrivacyPolicyPage() {
 
       <Section title="Children">
         <p>
-          Law by Grace is an educational service intended for study use. It is
+          THE LAW With Gracious is an educational service intended for study use. It is
           not directed at children under the age of 13, and we do not knowingly
           collect personal information from children under 13.
         </p>

@@ -1,4 +1,4 @@
-# Law by Grace
+# THE LAW With Gracious
 
 A calm, professional legal e-library and study platform. Courses, books, PDFs,
 videos and articles — organised by area of law and free to study.
@@ -6,7 +6,7 @@ videos and articles — organised by area of law and free to study.
 ## Stack
 
 - **Next.js 14 (App Router)** on Vercel
-- **Turso (libSQL)** via Prisma with `@prisma/adapter-libsql` — all Law by Grace
+- **Turso (libSQL)** via Prisma with `@prisma/adapter-libsql` — all THE LAW With Gracious
   tables live in the isolated `law_by_grace_*` namespace
 - **Cloudflare R2** for media storage (PDFs, videos, documents, images, covers)
 - **Resend** for transactional email (verification codes, password resets)
@@ -29,16 +29,16 @@ Required environment variables (see `.env.example` if present; never commit `.en
 | `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` | Yes* | Cloudflare R2 media storage (*required for uploads; the code degrades gracefully without it) |
 | `R2_REGION` | No | R2 region; defaults to `auto` |
 | `RESEND_API_KEY` | Yes* | Resend transactional email (*without it, codes are only logged in development) |
-| `EMAIL_FROM` | Yes* | Sender address for Resend; `src/lib/email.ts` always displays it as “Law by Grace <address>” |
+| `EMAIL_FROM` | Yes* | Sender address for Resend; `src/lib/email.ts` always displays it as “THE LAW With Gracious <address>” |
 | `AUTH_SECRET` | Yes | NextAuth/Auth.js session-signing secret (server-side only) |
-| `NEXTAUTH_URL` / `AUTH_URL` | No | Optional base-URL fallback for generated metadata links — must be the Law by Grace domain |
+| `NEXTAUTH_URL` / `AUTH_URL` | No | Optional base-URL fallback for generated metadata links — must be the platform domain (lawbygrace.app) |
 | `LAW_BY_GRACE_ADMIN_EMAIL` / `LAW_BY_GRACE_ADMIN_PASSWORD` / `LAW_BY_GRACE_ADMIN_NAME` | No | Bootstrap admin account for `pnpm db:admin` tooling only |
 
 ## Database
 
-The Turso database is shared with an unrelated project. Law by Grace only ever
+The Turso database is shared with an unrelated project. THE LAW With Gracious only ever
 reads and writes tables prefixed `law_by_grace_`. Run the idempotent migration
-to (re)create the Law by Grace data model:
+to (re)create THE LAW With Gracious data model:
 
 ```bash
 npx tsx scripts/turso-db.mts inspect   # read-only report

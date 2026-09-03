@@ -9,7 +9,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 /**
  * Cloudflare R2 storage (S3-compatible).
  *
- * Law by Grace media lives in the shared R2 bucket under a dedicated
+ * THE LAW With Gracious media lives in the shared R2 bucket under a dedicated
  * `law-by-grace/` key prefix so it never collides with other projects'
  * objects. Database records only ever store a compact media reference
  * (`/api/r2/<base64url key>`); the actual bytes stay in R2.

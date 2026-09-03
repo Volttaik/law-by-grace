@@ -24,11 +24,11 @@ async function main() {
       password: hashed,
       role: "ADMIN",
       isVerified: true,
-      bio: "Curator of the Law by Grace library.",
+      bio: "Curator of THE LAW With Gracious library.",
     },
   });
 
-  console.log("✅ Created the Law by Grace administrator:");
+  console.log("✅ Created the administrator for THE LAW With Gracious:");
   console.log("   Email:   ", email);
   console.log("   Password:", password);
   console.log("   Login at: /admin/login");

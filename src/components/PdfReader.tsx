@@ -8,6 +8,7 @@ import {
   Maximize2, Minimize2, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import WhatsAppChannelButton from "@/components/ui/WhatsAppChannelButton";
 
 /* PDF.js v3 (UMD) — works as a plain <script> tag, exposes window.pdfjsLib */
 const PDFJS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174";
@@ -226,7 +227,7 @@ export default function PdfReader({
     <div className="absolute inset-0 z-10 bg-[#0e1322] flex flex-col items-center justify-center gap-6 px-6">
       <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-elevation-md border border-white/10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+        <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
       </div>
       <div className="w-7 h-7 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
       <div className="text-center">
@@ -385,6 +386,9 @@ export default function PdfReader({
               </a>
             )}
 
+            {/* Join the course's WhatsApp Channel (same channel for every course) */}
+            <WhatsAppChannelButton iconOnly />
+
             {/* Fullscreen */}
             <button
               onClick={handleFullscreen}
@@ -462,7 +466,7 @@ export default function PdfReader({
         {/* ── Status bar ── */}
         {numPages > 0 && !loading && !error && (
           <div className="relative z-20 flex items-center justify-between px-4 py-1.5 bg-[#121829] border-t border-white/10 text-[11px] text-white/35 shrink-0">
-            <span className="tabular-nums hidden sm:block">Law by Grace reader</span>
+            <span className="tabular-nums hidden sm:block">THE LAW With Gracious reader</span>
             <span className="tabular-nums">Page {currentPage} of {numPages}</span>
             <span className="hidden sm:block">Scroll to read — zoom for comfort</span>
           </div>

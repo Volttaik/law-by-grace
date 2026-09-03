@@ -196,13 +196,13 @@ function LoginForm() {
         <div className="flex items-center gap-2.5 relative z-10">
           <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-white/15">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+            <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
           </div>
-          <span className="font-serif font-bold text-xl text-white tracking-tight">Law by Grace</span>
+          <span className="font-serif font-bold text-xl text-white tracking-tight">THE LAW With Gracious</span>
         </div>
         <div className="relative z-10 space-y-8">
           <div>
-            <p className="text-white/45 text-[11px] font-semibold uppercase tracking-[0.18em] mb-4">The Law by Grace e-library</p>
+            <p className="text-white/45 text-[11px] font-semibold uppercase tracking-[0.18em] mb-4">THE LAW With Gracious e-library</p>
             <h2 className="text-[1.75rem] leading-snug font-serif font-bold text-white">
               A calm place to study law — read, watch and learn.
             </h2>
@@ -257,11 +257,11 @@ function LoginForm() {
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 shadow-elevation-sm group-hover:opacity-90 transition-opacity">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+                <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
               </div>
               <div className="leading-tight">
-                <span className="block font-serif font-bold text-lg text-on-surface tracking-tight leading-none">Law by Grace</span>
-                <span className="block text-[11px] text-on-surface-variant mt-1.5">Sign in to your Law by Grace account</span>
+                <span className="block font-serif font-bold text-lg text-on-surface tracking-tight leading-none">THE LAW With Gracious</span>
+                <span className="block text-[11px] text-on-surface-variant mt-1.5">Sign in to your account on THE LAW With Gracious</span>
               </div>
             </Link>
           </div>

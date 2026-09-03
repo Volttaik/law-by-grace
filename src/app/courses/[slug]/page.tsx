@@ -16,6 +16,7 @@ import Footer from "@/components/layout/Footer";
 import { formatNumber } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import PdfReader from "@/components/PdfReader";
+import WhatsAppChannelButton from "@/components/ui/WhatsAppChannelButton";
 
 /* ── Material helpers ─────────────────────────────────── */
 
@@ -371,6 +372,8 @@ export default function CoursePage({ params }: { params: { slug: string } }) {
                       Sign in to save &amp; study
                     </Link>
                   )}
+                  {/* Every course automatically links to the platform WhatsApp Channel. */}
+                  <WhatsAppChannelButton />
                 </div>
               </div>
 
@@ -539,7 +542,7 @@ export default function CoursePage({ params }: { params: { slug: string } }) {
                     ) : (
                       <div className="space-y-5">
                         <p className="text-on-surface-variant leading-relaxed text-[15px]">
-                          {course.description || "Course materials from the Law by Grace library."}
+                          {course.description || "Course materials from THE LAW With Gracious library."}
                           {course.department ? ` Part of the ${course.department} collection.` : ""}
                         </p>
                         {course.tags.length > 0 && (
@@ -550,7 +553,7 @@ export default function CoursePage({ params }: { params: { slug: string } }) {
                         <div className="flex items-start gap-2.5 bg-surface-container-low border border-outline-variant/40 rounded-xl p-4">
                           <Scale className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
                           <p className="text-sm text-on-surface-variant leading-relaxed">
-                            Materials in this course are part of the Law by Grace library. Read documents in the
+                            Materials in this course are part of THE LAW With Gracious library. Read documents in the
                             built-in reader, watch lectures, or download materials to study offline — free to use.
                           </p>
                         </div>

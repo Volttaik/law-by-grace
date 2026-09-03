@@ -5,7 +5,7 @@ import { SUPPORT_EMAIL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Help & Support",
   description:
-    "Find help with accounts, email verification, courses, materials, articles and technical issues on Law by Grace.",
+    "Find help with accounts, email verification, courses, materials, articles and technical issues on THE LAW With Gracious.",
 };
 
 export default function SupportPage() {
@@ -13,7 +13,7 @@ export default function SupportPage() {
     <InfoLayout
       eyebrow="Support"
       title="Help & Support"
-      lede="The place to start when something is not working on Law by Grace."
+      lede="The place to start when something is not working on THE LAW With Gracious."
       updated="September 2026"
     >
       <Section title="Common topics">

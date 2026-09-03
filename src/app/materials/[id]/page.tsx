@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import WhatsAppChannelButton from "@/components/ui/WhatsAppChannelButton";
 import {
   FileText, BookOpen, Download, Link2, Check, ArrowLeft, PlayCircle,
   Image as ImageIcon, Video, File as FileIcon, Library, ExternalLink,
@@ -168,6 +169,7 @@ export default function MaterialPage() {
                 {copied ? <Check className="w-4 h-4 text-green-500" /> : <Link2 className="w-4 h-4" />}
                 {copied ? "Link copied" : "Copy share link"}
               </button>
+              <WhatsAppChannelButton className="py-2.5" />
             </div>
 
             {/* Course context */}
@@ -191,7 +193,7 @@ export default function MaterialPage() {
             <Library className="w-4 h-4 text-primary" />
           </div>
           <p className="text-sm text-on-surface-variant leading-relaxed">
-            This material is part of the Law by Grace library — read it online in the built-in reader,
+            This material is part of THE LAW With Gracious library — read it online in the built-in reader,
             or download it to study offline.
           </p>
         </div>

@@ -5,20 +5,20 @@ import { SUPPORT_EMAIL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with Law by Grace about support, feedback, privacy or copyright concerns.",
+    "Get in touch with THE LAW With Gracious about support, feedback, privacy or copyright concerns.",
 };
 
 export default function ContactPage() {
   return (
     <InfoLayout
       eyebrow="Support"
-      title="Contact Law by Grace"
+      title="Contact THE LAW With Gracious"
       lede="We read every message. Choose the right address and tell us what you need."
       updated="September 2026"
     >
       <Section title="Email">
         <p>
-          The best way to reach Law by Grace is by email at{" "}
+          The best way to reach THE LAW With Gracious is by email at{" "}
           <a
             href={`mailto:${SUPPORT_EMAIL}`}
             className="text-secondary font-medium hover:text-primary transition-colors break-all"
@@ -57,7 +57,7 @@ export default function ContactPage() {
       <Section title="A note on legal matters">
         <p>
           If you are writing about a personal legal matter, please remember
-          that Law by Grace is an educational platform and cannot give legal
+          that THE LAW With Gracious is an educational platform and cannot give legal
           advice or act as your lawyer.
         </p>
       </Section>

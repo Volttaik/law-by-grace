@@ -442,7 +442,7 @@ function AppearanceTab() {
           <h2 className="font-manrope font-semibold text-lg text-on-surface">Theme</h2>
         </div>
         <p className="text-xs text-on-surface-variant mb-6">
-          Law by Grace opens in light mode. Choose whichever feels best for reading and studying — your choice is remembered on this device.
+          THE LAW With Gracious opens in light mode. Choose whichever feels best for reading and studying — your choice is remembered on this device.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
           <button
@@ -533,7 +533,7 @@ export default function SettingsPage() {
             <ArrowLeft className="w-4 h-4" />Back to dashboard
           </Link>
           <h1 className="font-serif font-bold text-xl md:text-2xl text-on-surface">Settings</h1>
-          <p className="text-sm text-on-surface-variant mt-1">Manage your profile, security and how Law by Grace looks for you.</p>
+          <p className="text-sm text-on-surface-variant mt-1">Manage your profile, security and how THE LAW With Gracious looks for you.</p>
         </div>
 
         <div className="flex gap-8 flex-col md:flex-row">

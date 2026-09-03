@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const course = await res.json();
     if (course.error) throw new Error(course.error);
 
-    const title = `${course.title} — Law by Grace`;
-    const description = course.description ?? "A legal course on Law by Grace.";
+    const title = `${course.title} — THE LAW With Gracious`;
+    const description = course.description ?? "A legal course on THE LAW With Gracious.";
     const image = course.banner ?? undefined;
 
     return {
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         title,
         description,
         type: "article",
-        siteName: "Law by Grace",
+        siteName: "THE LAW With Gracious",
         ...(image && { images: [{ url: image, width: 1200, height: 630, alt: course.title }] }),
         authors: [course.owner?.name].filter(Boolean),
       },
@@ -49,8 +49,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
   } catch {
     return {
-      title: "Course — Law by Grace",
-      description: "Legal course materials on Law by Grace.",
+      title: "Course — THE LAW With Gracious",
+      description: "Legal course materials on THE LAW With Gracious.",
     };
   }
 }

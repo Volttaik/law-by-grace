@@ -180,7 +180,7 @@ export default function RegisterPage() {
         setLoading(false);
         return;
       }
-      // Account verified — cover the screen with the Law by Grace loader
+      // Account verified — cover the screen with the branded loader
       // BEFORE the session flips to authenticated, so the verification screen
       // disappears cleanly and no mixed auth state (e.g. the bottom nav)
       // appears underneath it.
@@ -229,9 +229,9 @@ export default function RegisterPage() {
         <Link href="/" className="flex items-center gap-2.5 relative z-10">
           <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-white/15">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+            <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
           </div>
-          <span className="font-serif font-bold text-xl text-white tracking-tight">Law by Grace</span>
+          <span className="font-serif font-bold text-xl text-white tracking-tight">THE LAW With Gracious</span>
         </Link>
 
         <div className="relative z-10 space-y-8">
@@ -289,10 +289,10 @@ export default function RegisterPage() {
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 shadow-elevation-sm group-hover:opacity-90 transition-opacity">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+                <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
               </div>
               <div className="leading-tight">
-                <span className="block font-serif font-bold text-lg text-on-surface tracking-tight leading-none">Law by Grace</span>
+                <span className="block font-serif font-bold text-lg text-on-surface tracking-tight leading-none">THE LAW With Gracious</span>
                 <span className="block text-[11px] text-on-surface-variant mt-1.5">Start exploring our legal library</span>
               </div>
             </Link>
@@ -408,7 +408,7 @@ export default function RegisterPage() {
                 className="space-y-4"
               >
                 <h1 className="font-serif font-bold text-2xl text-on-surface mb-2">Tell us a little about yourself</h1>
-                <p className="text-on-surface-variant text-sm mb-2">So Law by Grace can provide a better learning experience.</p>
+                <p className="text-on-surface-variant text-sm mb-2">So THE LAW With Gracious can provide a better learning experience.</p>
                 <div>
                   <label className="block text-sm font-medium text-on-surface mb-1.5">University / Institution</label>
                   <select value={form.university} onChange={e => update("university", e.target.value)} className="input-field">
@@ -488,7 +488,7 @@ export default function RegisterPage() {
                 <div className="flex items-start gap-2.5 bg-surface-container-low border border-outline-variant/50 rounded-lg p-4">
                   <GraduationCap className="w-4 h-4 text-on-surface-variant shrink-0 mt-0.5" />
                   <p className="text-sm text-on-surface-variant leading-relaxed">
-                    As a Law by Grace reader you can browse the library, read documents, watch lectures and save courses to study later.
+                    As a reader on THE LAW With Gracious you can browse the library, read documents, watch lectures and save courses to study later.
                   </p>
                 </div>
               </motion.div>

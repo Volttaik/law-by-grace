@@ -31,7 +31,7 @@ export default function PdfViewPage() {
         <div className="min-h-screen bg-[#0e1322] flex flex-col items-center justify-center gap-6 px-6">
           <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+            <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
           </div>
           <div className="w-7 h-7 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
           <p className="text-white/70 text-sm font-medium">Preparing your reading experience…</p>

@@ -6,7 +6,7 @@ import MobileNav from "@/components/layout/MobileNav";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 export const metadata: Metadata = {
-  title: "Law by Grace — Legal E-Library & Study Platform",
+  title: "THE LAW With Gracious — Legal E-Library & Study Platform",
   description:
     "A calm, beautiful e-library for law. Discover legal courses, books, PDFs, videos and articles — study effectively and understand the law.",
   keywords: [
@@ -19,26 +19,26 @@ export const metadata: Metadata = {
     "constitutional law",
     "criminal law",
     "study",
-    "Law by Grace",
+    "THE LAW With Gracious",
   ],
   openGraph: {
-    title: "Law by Grace — Legal E-Library & Study Platform",
+    title: "THE LAW With Gracious — Legal E-Library & Study Platform",
     description:
       "A calm, beautiful e-library for law. Discover legal courses, books, PDFs, videos and articles.",
     type: "website",
-    siteName: "Law by Grace",
+    siteName: "THE LAW With Gracious",
     images: [
       {
         url: "/icons/og-1200x630.png",
         width: 1200,
         height: 630,
-        alt: "Law by Grace — Legal E-Library & Study Platform",
+        alt: "THE LAW With Gracious — Legal E-Library & Study Platform",
       },
     ],
   },
   twitter: {
     card: "summary",
-    title: "Law by Grace — Legal E-Library & Study Platform",
+    title: "THE LAW With Gracious — Legal E-Library & Study Platform",
     description:
       "A calm, beautiful e-library for law. Discover legal courses, books, PDFs, videos and articles.",
     images: ["/icons/og-1200x630.png"],
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Law by Grace",
+    title: "THE LAW With Gracious",
   },
 };
 

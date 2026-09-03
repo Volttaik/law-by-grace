@@ -1,5 +1,5 @@
 /**
- * Law by Grace · icon generator
+ * THE LAW With Gracious · icon generator
  *
  * Renders the canonical stacked-books mark (src/app/icon.svg) into the PNG
  * sizes used by app icons, manifests and social metadata, plus a 1200×630
@@ -38,7 +38,7 @@ const card = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"
   </defs>
   <rect width="${W}" height="${H}" fill="url(#bg)"/>
   <image href="${iconUri}" x="450" y="64" width="300" height="300"/>
-  <text x="600" y="470" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" fill="#ffffff">Law by Grace</text>
+  <text x="600" y="470" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" fill="#ffffff">THE LAW With Gracious</text>
   <text x="600" y="528" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" letter-spacing="1" fill="#9fb6dd">LEGAL E-LIBRARY &amp; STUDY PLATFORM</text>
 </svg>`;
 

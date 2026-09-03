@@ -66,9 +66,9 @@ export default function ForgotPasswordPage() {
         <div className="relative z-10 flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-white/15">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+            <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
           </div>
-          <span className="font-serif font-bold text-xl text-white tracking-tight">Law by Grace</span>
+          <span className="font-serif font-bold text-xl text-white tracking-tight">THE LAW With Gracious</span>
         </div>
         <div className="relative z-10">
           <p className="text-white/45 text-[11px] font-semibold uppercase tracking-[0.18em] mb-4">Account security</p>
@@ -87,9 +87,9 @@ export default function ForgotPasswordPage() {
           <div className="flex items-center gap-2 mb-10 lg:hidden">
             <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 shadow-elevation-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/icon.svg" alt="Law by Grace" className="w-full h-full object-cover" />
+              <img src="/icons/icon.svg" alt="THE LAW With Gracious" className="w-full h-full object-cover" />
             </div>
-            <span className="font-serif font-bold text-lg text-on-surface tracking-tight">Law by Grace</span>
+            <span className="font-serif font-bold text-lg text-on-surface tracking-tight">THE LAW With Gracious</span>
           </div>
 
           <AnimatePresence mode="wait">

@@ -2,22 +2,22 @@ import type { Metadata } from "next";
 import InfoLayout, { Section } from "@/components/layout/InfoLayout";
 
 export const metadata: Metadata = {
-  title: "About Law by Grace — Our Story",
+  title: "About THE LAW With Gracious — Our Story",
   description:
-    "What Law by Grace is, why it exists, and the person behind the legal e-library and study platform.",
+    "What THE LAW With Gracious is, why it exists, and the person behind the legal e-library and study platform.",
 };
 
 export default function AboutPage() {
   return (
     <InfoLayout
       eyebrow="Platform"
-      title="About Law by Grace"
+      title="About THE LAW With Gracious"
       lede="A calm, beautiful e-library for law — built to make legal knowledge easier to discover, read and understand."
       updated="September 2026"
     >
-      <Section title="What Law by Grace is">
+      <Section title="What THE LAW With Gracious is">
         <p>
-          Law by Grace is a legal e-library and study platform. It organises
+          THE LAW With Gracious is a legal e-library and study platform. It organises
           legal courses, books, PDFs, documents, videos and articles by area of
           law, and presents them in a calm, focused reading experience — so
           students, readers and professionals can study at their own pace.
@@ -25,7 +25,7 @@ export default function AboutPage() {
         <p>
           Every part of the platform is designed around one idea: legal
           knowledge should not be locked behind confusing interfaces or
-          scattered across hard-to-find sources. Law by Grace brings materials
+          scattered across hard-to-find sources. THE LAW With Gracious brings materials
           together in one library and makes them comfortable to read, search
           and return to.
         </p>
@@ -35,7 +35,7 @@ export default function AboutPage() {
         <p>
           Law touches nearly every part of daily life, yet high-quality legal
           material is often difficult to find, expensive, or written in a way
-          that is hard to approach. Law by Grace was created to close that gap:
+          that is hard to approach. THE LAW With Gracious was created to close that gap:
           a space where legal education is open, well-organised and genuinely
           pleasant to use.
         </p>
@@ -46,9 +46,9 @@ export default function AboutPage() {
         </p>
       </Section>
 
-      <Section title="The person behind Law by Grace">
+      <Section title="The person behind THE LAW With Gracious">
         <p>
-          Law by Grace is created and maintained by its founder, who built the
+          THE LAW With Gracious is created and maintained by its founder, who built the
           platform to share a love of clear legal study with a wider audience.
           The project is a personal endeavour: every course, article and design
           decision in the library reflects that single, careful point of view.
@@ -59,12 +59,12 @@ export default function AboutPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/creator-owner.jpg"
-                alt="The creator of Law by Grace"
+                alt="The creator of THE LAW With Gracious"
                 className="w-full h-auto object-cover"
               />
             </div>
             <figcaption className="mt-3 text-sm text-on-surface-variant">
-              The creator of Law by Grace.
+              The creator of THE LAW With Gracious.
             </figcaption>
           </figure>
         </div>
