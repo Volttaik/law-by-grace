@@ -29,10 +29,10 @@ export const metadata: Metadata = {
     siteName: "Law by Grace",
     images: [
       {
-        url: "/icons/icon-192.png",
-        width: 192,
-        height: 192,
-        alt: "Law by Grace",
+        url: "/icons/og-1200x630.png",
+        width: 1200,
+        height: 630,
+        alt: "Law by Grace — Legal E-Library & Study Platform",
       },
     ],
   },
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     title: "Law by Grace — Legal E-Library & Study Platform",
     description:
       "A calm, beautiful e-library for law. Discover legal courses, books, PDFs, videos and articles.",
-    images: ["/icons/icon-192.png"],
+    images: ["/icons/og-1200x630.png"],
   },
   manifest: "/manifest.json",
   appleWebApp: {
@@ -71,7 +71,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap"
           rel="stylesheet"
         />
-        <link rel="apple-touch-icon" href="/icons/icon.svg" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
         <style dangerouslySetInnerHTML={{ __html: `html{background:#f6f9fe}html.dark{background:#070b15}` }} />
         <script
