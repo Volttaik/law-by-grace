@@ -5,6 +5,7 @@
  * NEVER touches tables outside the `law_by_grace_*` namespace:
  *
  *   npx tsx scripts/turso-db.mts inspect   # read-only schema report
+ *   npx tsx scripts/turso-db.mts verify    # read-only: live DB vs prisma/schema.prisma
  *   npx tsx scripts/turso-db.mts init      # create LBG tables (idempotent)
  *
  * Requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN (from .env or the shell).
@@ -81,6 +82,96 @@ async function inspect() {
     console.log(`  ${other.join(", ") || "(none)"}`);
     console.log(`Law by Grace objects: ${lbg.length}`);
     console.log(`  ${lbg.join(", ") || "(none)"}`);
+  } finally {
+    client.close();
+  }
+}
+
+interface ExpectedTable {
+  name: string;
+  columns: string[];
+}
+
+/** Parse table names + column names out of the generated Prisma DDL (offline). */
+function parseExpected(ddl: string): { tables: ExpectedTable[]; indexNames: string[] } {
+  const tables: ExpectedTable[] = [];
+  const indexNames: string[] = [];
+  const tableRe = /CREATE TABLE "?(law_by_grace_[A-Za-z0-9_]+)"?\s*\(([\s\S]*?)\);?/g;
+  let m: RegExpExecArray | null;
+  while ((m = tableRe.exec(ddl))) {
+    const name = m[1];
+    const columns: string[] = [];
+    const colRe = /^\s*"([A-Za-z0-9_]+)"\s+[A-Z]+/gm;
+    let c: RegExpExecArray | null;
+    while ((c = colRe.exec(m[2]))) columns.push(c[1]);
+    tables.push({ name, columns });
+  }
+  const idxRe = /CREATE (?:UNIQUE )?INDEX "?(law_by_grace_[A-Za-z0-9_]+)"?/g;
+  while ((m = idxRe.exec(ddl))) indexNames.push(m[1]);
+  return { tables, indexNames };
+}
+
+/**
+ * Read-only audit: compare the live law_by_grace_* schema against
+ * prisma/schema.prisma. Never writes. Lists anything missing so `init`
+ * (or a targeted column migration) can be applied deliberately.
+ */
+async function verify() {
+  const client = db();
+  try {
+    const { tables: expectedTables, indexNames: expectedIndexes } = parseExpected(generateDdl());
+
+    const { rows: tblRows } = await client.execute(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+    );
+    const liveTables = new Set(tblRows.map((r: any) => String(r.name)));
+
+    const { rows: idxRows } = await client.execute(
+      "SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'law_by_grace_%' ORDER BY name"
+    );
+    const liveIndexes = new Set(idxRows.map((r: any) => String(r.name)));
+
+    const missingTables: string[] = [];
+    const missingColumns: { table: string; columns: string[] }[] = [];
+    for (const t of expectedTables) {
+      if (!liveTables.has(t.name)) {
+        missingTables.push(t.name);
+        continue;
+      }
+      const { rows } = await client.execute(`PRAGMA table_info("${t.name}")`);
+      const liveCols = new Set(rows.map((r: any) => String(r.name)));
+      const absent = t.columns.filter((col) => !liveCols.has(col));
+      if (absent.length > 0) missingColumns.push({ table: t.name, columns: absent });
+    }
+    const missingIndexes = expectedIndexes.filter((n) => !liveIndexes.has(n));
+
+    const liveLbgTables = [...liveTables].filter((n) => n.startsWith(PREFIX));
+    const extraTables = liveLbgTables
+      .filter((n) => !expectedTables.some((t) => t.name === n))
+      .sort();
+
+    console.log("── Law by Grace schema audit (read-only) ────────────────");
+    console.log(`Expected tables: ${expectedTables.length}, indexes: ${expectedIndexes.length}`);
+    console.log(`Live law_by_grace_ tables: ${liveLbgTables.length}`);
+    console.log(`Missing tables: ${missingTables.length ? missingTables.join(", ") : "(none)"}`);
+    if (missingTables.length === 0 && missingColumns.length === 0 && missingIndexes.length === 0) {
+      console.log("✔ Schema is in sync with prisma/schema.prisma.");
+    } else {
+      if (missingColumns.length > 0) {
+        console.log("Missing columns on existing tables (need ALTER TABLE ADD COLUMN):");
+        for (const mc of missingColumns) console.log(`  ${mc.table}: ${mc.columns.join(", ")}`);
+      }
+      if (missingIndexes.length > 0) {
+        console.log(`Missing indexes (fixed by \`init\`): ${missingIndexes.join(", ")}`);
+      }
+    }
+    if (extraTables.length > 0) {
+      console.log(`Extra law_by_grace_ tables NOT in the schema (legacy leftovers, kept):`);
+      for (const t of extraTables) console.log(`  ${t}`);
+    }
+    const other = [...liveTables].filter((n) => !n.startsWith(PREFIX));
+    console.log(`Other-project tables (UNTOUCHED): ${other.length}`);
+    console.log("───────────────────────────────────────────────────────────");
   } finally {
     client.close();
   }
@@ -193,11 +284,13 @@ loadEnv();
 const action = process.argv[2] ?? "inspect";
 if (action === "inspect") {
   await inspect();
+} else if (action === "verify") {
+  await verify();
 } else if (action === "init") {
   await init();
 } else if (action === "admin") {
   await ensureAdmin();
 } else {
-  console.error('Unknown action. Use "inspect", "init" or "admin".');
+  console.error('Unknown action. Use "inspect", "verify", "init" or "admin".');
   process.exit(1);
 }

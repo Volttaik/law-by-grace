@@ -76,7 +76,10 @@ export default function RootLayout({
         <style dangerouslySetInnerHTML={{ __html: `html{background:#f6f9fe}html.dark{background:#070b15}` }} />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('lbg-theme');if(t==null||t==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+            // Light mode is the default; apply dark only when the user has
+            // explicitly saved that preference. Runs pre-hydration so there
+            // is never a theme flash.
+            __html: `(function(){try{var t=localStorage.getItem('lbg-theme');if(t==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})()`,
           }}
         />
         <script

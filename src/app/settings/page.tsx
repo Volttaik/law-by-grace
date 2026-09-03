@@ -442,7 +442,7 @@ function AppearanceTab() {
           <h2 className="font-manrope font-semibold text-lg text-on-surface">Theme</h2>
         </div>
         <p className="text-xs text-on-surface-variant mb-6">
-          Law by Grace defaults to dark mode. Choose whichever feels best for reading and studying.
+          Law by Grace opens in light mode. Choose whichever feels best for reading and studying — your choice is remembered on this device.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
           <button
@@ -463,7 +463,7 @@ function AppearanceTab() {
               <p className="text-sm font-semibold text-on-surface">Dark mode</p>
               {theme === "dark" && <Check className="w-4 h-4 text-secondary ml-auto" />}
             </div>
-            <p className="text-[11px] text-on-surface-variant mt-0.5">Calm navy surfaces — the default</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">Calm navy surfaces — easy on the eyes at night</p>
           </button>
           <button
             onClick={() => { if (theme !== "light") toggle(); }}

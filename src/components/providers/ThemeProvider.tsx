@@ -10,7 +10,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "dark",
+  theme: "light",
   toggle: () => {},
 });
 
@@ -21,12 +21,13 @@ export function useTheme() {
 const THEME_KEY = "lbg-theme";
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  // Light mode is the default. An explicit saved preference wins, so users
+  // who previously chose dark mode stay in dark mode.
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    // Dark mode is the default for Law by Grace.
     let stored = localStorage.getItem(THEME_KEY) as Theme | null;
-    const resolved = stored === "light" ? "light" : "dark";
+    const resolved = stored === "dark" ? "dark" : "light";
     setTheme(resolved);
     applyTheme(resolved);
   }, []);

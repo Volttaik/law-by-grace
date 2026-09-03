@@ -1,12 +1,43 @@
+/**
+ * Law by Grace · email service (single authoritative implementation)
+ *
+ * This module is the ONLY place Law by Grace sends email. It is fully
+ * independent of any legacy (Mantra/Mentra) email code, templates,
+ * providers or configuration. All Law by Grace verification and password
+ * emails are built here and delivered through Resend using environment
+ * variables; the API key is read server-side only and never leaves the
+ * server or reaches the client.
+ */
+
+const BRAND_NAME = "Law by Grace";
+
 type Purpose = "signup" | "password_reset" | "bank_account" | "verify_account" | "delete_course";
 
 const SUBJECTS: Record<Purpose, string> = {
-  signup: "Your Law by Grace verification code – action required",
-  password_reset: "Reset your Law by Grace password – verification code inside",
+  signup: "Verify your Law by Grace account",
+  password_reset: "Reset your Law by Grace password",
   bank_account: "Secure your Law by Grace account",
-  verify_account: "Confirm your Law by Grace email address",
+  verify_account: "Verify your Law by Grace account",
   delete_course: "Confirm course deletion on Law by Grace – action required",
 };
+
+/**
+ * Resolve the Resend "from" value.
+ *
+ * The sender is ALWAYS branded as Law by Grace: the address is taken from
+ * EMAIL_FROM (the verified Law by Grace sending address), and any display
+ * name supplied by the environment is replaced with "Law by Grace". This
+ * guarantees that a stale environment value (e.g. an old project's
+ * "Lobby Markets <…>" sender) can never appear as the sender name.
+ */
+function resolveFrom(): string | null {
+  const raw = process.env.EMAIL_FROM?.trim();
+  if (!raw) return null;
+  const match = raw.match(/<([^<>]+)>/);
+  const address = (match ? match[1] : raw).trim();
+  if (!address || !address.includes("@")) return null;
+  return `${BRAND_NAME} <${address}>`;
+}
 
 interface EmailContent {
   icon: string;
@@ -256,7 +287,7 @@ export type EmailDelivery = "email" | "dev";
 
 /** True when Resend is configured for real email delivery. */
 export function isEmailConfigured(): boolean {
-  return !!(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+  return !!(process.env.RESEND_API_KEY && resolveFrom());
 }
 
 /**
@@ -286,6 +317,10 @@ export async function sendVerificationCode(
   }
 
   const apiKey = process.env.RESEND_API_KEY;
+  const from = resolveFrom();
+  if (!from) {
+    throw new Error("Email delivery is not configured (missing EMAIL_FROM)");
+  }
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -293,7 +328,7 @@ export async function sendVerificationCode(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM,
+      from,
       to: [email],
       subject: SUBJECTS[purpose],
       html: buildEmail(code, purpose, email),
@@ -302,8 +337,12 @@ export async function sendVerificationCode(
   });
 
   if (!res.ok) {
+    // Safe diagnostics only — never log the API key or verification code.
     const detail = (await res.text()).slice(0, 400);
-    console.error(`[email] Resend delivery failed (${res.status}):`, detail);
+    console.error(
+      `[email] Resend delivery failed (${res.status}) from=${from} to=${email}:`,
+      detail
+    );
     throw new Error("Email delivery failed");
   }
   return "email";

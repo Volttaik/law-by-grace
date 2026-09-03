@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local dev artifacts
 .mt-storage/
+
+# allow the reference template to be committed
+!.env.example
