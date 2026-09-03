@@ -1,0 +1,26 @@
+{
+  "name": "Law by Grace — Legal E-Library & Study Platform",
+  "short_name": "Law by Grace",
+  "description": "A calm, beautiful e-library for law. Discover legal courses, books, PDFs, videos and articles.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["education", "books", "reference"],
+  "screenshots": []
+}

@@ -1,0 +1,72 @@
+{
+  "name": "law-by-grace",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "tsx prisma/seed.ts",
+    "db:inspect": "tsx scripts/turso-db.mts inspect",
+    "db:init": "tsx scripts/turso-db.mts init",
+    "db:admin": "tsx scripts/turso-db.mts admin"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1125.0",
+    "@libsql/client": "^0.17.4",
+    "@prisma/adapter-libsql": "6.19.3",
+    "@prisma/client": "^6",
+    "@tiptap/extension-character-count": "^3.26.0",
+    "@tiptap/extension-color": "^3.26.0",
+    "@tiptap/extension-font-family": "^3.26.0",
+    "@tiptap/extension-highlight": "^3.26.0",
+    "@tiptap/extension-image": "^3.26.0",
+    "@tiptap/extension-placeholder": "^3.26.0",
+    "@tiptap/extension-table": "^3.26.0",
+    "@tiptap/extension-table-cell": "^3.26.0",
+    "@tiptap/extension-table-header": "^3.26.0",
+    "@tiptap/extension-table-row": "^3.26.0",
+    "@tiptap/extension-task-item": "^3.26.0",
+    "@tiptap/extension-task-list": "^3.26.0",
+    "@tiptap/extension-text-align": "^3.26.0",
+    "@tiptap/extension-text-style": "^3.26.0",
+    "@tiptap/extension-typography": "^3.26.0",
+    "@tiptap/extension-underline": "^3.26.0",
+    "@tiptap/pm": "^3.26.0",
+    "@tiptap/react": "^3.26.0",
+    "@tiptap/starter-kit": "^3.26.0",
+    "bcryptjs": "^3.0.3",
+    "clsx": "^2",
+    "framer-motion": "^11",
+    "lucide-react": "^0.513.0",
+    "next": "^14.2.29",
+    "next-auth": "5.0.0-beta.28",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^8",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.29",
+    "postcss": "^8",
+    "prisma": "^6",
+    "tailwindcss": "^3",
+    "tsx": "^4.19.0",
+    "typescript": "^5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "unrs-resolver"
+    ]
+  }
+}

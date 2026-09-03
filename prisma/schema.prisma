@@ -1,0 +1,277 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./prisma/dev.db"
+}
+
+// ─── Authentication ───────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  username      String    @unique
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  banner        String?
+  password      String?
+  bio           String?
+  university    String?
+  department    String?
+  level         String?
+  website       String?
+  location      String?
+  isVerified    Boolean   @default(false)
+  role          Role      @default(STUDENT)
+  bannedAt      DateTime?
+  banReason     String?
+  themeConfig   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  courses       Course[]            @relation("CourseOwner")
+  saves         SavedCourse[]
+  articles      Article[]           @relation("ArticleAuthor")
+  notifications Notification[]
+  progress      LearningProgress[]
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("law_by_grace_users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("law_by_grace_accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("law_by_grace_sessions")
+}
+
+// ─── Library: courses, materials, modules ─────────────────────────────────────
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  courseCode  String?
+  university  String?
+  department  String?
+  semester    String?
+  language    String   @default("PDF")
+  isPublic    Boolean  @default(true)
+  isVerified  Boolean  @default(false)
+  readme      String?
+  banner      String?
+  views       Int      @default(0)
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner     User             @relation("CourseOwner", fields: [ownerId], references: [id])
+  tags      CourseTag[]
+  modules   Module[]
+  materials Material[]
+  saves     SavedCourse[]
+  progress  LearningProgress[]
+
+  @@map("law_by_grace_courses")
+}
+
+model Material {
+  id        String   @id @default(cuid())
+  courseId  String
+  moduleId  String?
+  name      String
+  url       String
+  rawPath   String?
+  size      Int      @default(0)
+  mimeType  String   @default("application/octet-stream")
+  createdAt DateTime @default(now())
+
+  course Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+
+  @@map("law_by_grace_materials")
+}
+
+model Module {
+  id       String  @id @default(cuid())
+  title    String
+  type     String  @default("lecture")
+  files    Int     @default(0)
+  duration String?
+  order    Int     @default(0)
+  courseId String
+
+  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  materials Material[]
+
+  @@map("law_by_grace_modules")
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  name    String      @unique
+  courses CourseTag[]
+
+  @@map("law_by_grace_tags")
+}
+
+model CourseTag {
+  courseId String
+  tagId    String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, tagId])
+  @@map("law_by_grace_course_tags")
+}
+
+// A reader's saved courses (the library bookmark shelf).
+model SavedCourse {
+  userId    String
+  courseId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+  @@map("law_by_grace_saved_courses")
+}
+
+// ─── Account & verification ───────────────────────────────────────────────────
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  purpose   String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, purpose])
+  @@map("law_by_grace_email_verifications")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  read      Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("law_by_grace_notifications")
+}
+
+model LearningProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  moduleId  String?
+  position  Int      @default(0)
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("law_by_grace_learning_progress")
+}
+
+// ─── Articles ─────────────────────────────────────────────────────────────────
+
+model Article {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  title       String
+  summary     String?
+  authorId    String
+  isPublished Boolean          @default(false)
+  coverImage  String?
+  views       Int              @default(0)
+  likes       Int              @default(0)
+  tags        String           @default("[]")
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  author      User             @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  editions    ArticleEdition[]
+
+  @@map("law_by_grace_articles")
+}
+
+model ArticleEdition {
+  id          String             @id @default(cuid())
+  articleId   String
+  number      Int
+  label       String
+  content     String
+  connectors  ArticleConnector[]
+  publishedAt DateTime           @default(now())
+  article     Article            @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, number])
+  @@map("law_by_grace_article_editions")
+}
+
+model ArticleConnector {
+  id           String         @id @default(cuid())
+  editionId    String
+  textAnchorId String
+  imageNodeId  String
+  edition      ArticleEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+
+  @@map("law_by_grace_article_connectors")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  PROFESSOR
+  ADMIN
+}
+
+enum NotificationType {
+  STAR
+  FORK
+  CONTRIBUTION
+  COMMENT
+  FOLLOW
+  SYSTEM
+  QUIZ
+  CREDIT
+  COMMUNITY_INVITE
+  COMMUNITY_JOIN
+  DM
+}

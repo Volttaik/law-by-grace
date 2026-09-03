@@ -1,0 +1,1 @@
+- [Auth file path](auth-path.md) — `src/auth.ts` is the canonical auth config; `@/` maps to `./src/` so `@/auth` = `src/auth.ts`, not root `auth.ts`
