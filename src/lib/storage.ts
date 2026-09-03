@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 /**
  * Cloudflare R2 storage (S3-compatible).
@@ -67,6 +68,24 @@ export async function putObject(
     })
   );
   return { key };
+}
+
+/**
+ * Presign a PUT URL so the browser can upload straight to R2 — bypassing the
+ * serverless request-body limit. Callers still validate the file server-side
+ * (see src/lib/uploads.ts) before signing.
+ */
+export async function presignPut(
+  key: string,
+  contentType: string,
+  expiresIn = 600
+): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME,
+    Key: key,
+    ContentType: contentType || "application/octet-stream",
+  });
+  return getSignedUrl(s3(), command, { expiresIn });
 }
 
 export async function deleteObject(key: string) {

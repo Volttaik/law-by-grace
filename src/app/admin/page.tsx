@@ -1441,7 +1441,8 @@ function CourseMaterialsModal({ course, onClose, onChanged, showToast }: {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const files = data?.files ?? [];
+  // GET /api/admin/courses/[id] returns { materials, modules }.
+  const files = data?.materials ?? data?.files ?? [];
   const modules = data?.modules ?? [];
   const generalFiles = files.filter((f: any) => !f.moduleId);
   const filesOf = (moduleId: string) => files.filter((f: any) => f.moduleId === moduleId);
@@ -1449,20 +1450,59 @@ function CourseMaterialsModal({ course, onClose, onChanged, showToast }: {
   const uploadFile = async (file: File) => {
     setUploading(true);
     setUploadName(file.name);
+    const ok = (msg: string) => { showToast(msg); onChanged(); refresh(); };
+    const fail = (msg: string) => { showToast(msg); };
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch(`/api/courses/${course.slug}/files`, { method: "POST", body: fd });
-      const d = await res.json();
-      if (res.ok) {
-        showToast(`“${file.name}” added to the course`);
-        onChanged();
-        refresh();
-      } else {
-        showToast(d.error ?? "Upload failed");
+      const name = file.name;
+      const mimeType = file.type || "application/octet-stream";
+
+      // Small files keep using the server proxy (works everywhere).
+      if (file.size <= 3 * 1024 * 1024) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch(`/api/courses/${course.slug}/files`, { method: "POST", body: fd });
+        const d = await res.json();
+        if (!res.ok) { fail(d.error ?? "Upload failed"); return; }
+        ok(`“${name}” added to the course`);
+        return;
       }
-    } catch {
-      showToast("Upload failed — please try again");
+
+      // Larger files upload directly to R2 via a presigned URL so they are
+      // not limited by the serverless request-body cap (~4.5 MB on Vercel).
+      const presignRes = await fetch(`/api/courses/${course.slug}/files/presign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, mimeType, size: file.size }),
+      });
+      const presigned = await presignRes.json();
+      if (!presignRes.ok) { fail(presigned.error ?? "Upload failed"); return; }
+
+      const putRes = await fetch(presigned.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": mimeType },
+        body: file,
+      });
+      if (!putRes.ok) {
+        console.error("[upload] presigned PUT failed", putRes.status);
+        fail(
+          putRes.status === 403
+            ? "Upload blocked — the R2 bucket CORS policy must allow direct uploads from this domain."
+            : "Upload failed — please try again"
+        );
+        return;
+      }
+
+      const recordRes = await fetch(`/api/courses/${course.slug}/files/record`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, mimeType, size: file.size, key: presigned.key }),
+      });
+      const recorded = await recordRes.json();
+      if (!recordRes.ok) { fail(recorded.error ?? "Upload failed"); return; }
+      ok(`“${name}” added to the course`);
+    } catch (err) {
+      console.error("[upload]", err);
+      fail("Upload failed — please try again");
     } finally {
       setUploading(false);
       setUploadName("");

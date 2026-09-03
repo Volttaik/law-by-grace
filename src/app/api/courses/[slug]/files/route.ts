@@ -5,46 +5,7 @@ import {
   buildKey, deleteRef, isConfigured,
   mediaRef, putObject,
 } from "@/lib/storage";
-
-const ALLOWED_MIME_TYPES = new Set([
-  "application/pdf",
-  "application/zip",
-  "application/x-zip-compressed",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint",
-  "application/msword",
-  "application/vnd.ms-excel",
-  "application/octet-stream",
-  "text/plain",
-  "text/markdown",
-  "text/csv",
-  "image/png",
-  "image/jpeg",
-  "image/gif",
-  "image/webp",
-  "audio/mpeg",
-  "audio/wav",
-  "audio/ogg",
-  "video/mp4",
-  "video/webm",
-]);
-
-const BLOCKED_EXTENSIONS =
-  /\\.(html?|svg|php|sh|exe|bat|cmd|js|mjs|ts|jsx|tsx|py|rb|go|java|c|cpp)$/i;
-
-const MEDIA_MIMES = new Set([
-  "image/png",
-  "image/jpeg",
-  "image/gif",
-  "image/webp",
-  "audio/mpeg",
-  "audio/wav",
-  "audio/ogg",
-  "video/mp4",
-  "video/webm",
-]);
+import { isMediaMime, validateUpload } from "@/lib/uploads";
 
 export async function GET(
   req: NextRequest,
@@ -105,27 +66,10 @@ export async function POST(
   const moduleId = formData.get("moduleId") as string | null;
   const displayName = (formData.get("displayName") as string | null)?.trim() || null;
 
-  const maxSize = 50 * 1024 * 1024;
-  if (file.size > maxSize) {
-    return NextResponse.json(
-      { error: "File exceeds 50 MB limit" },
-      { status: 413 }
-    );
-  }
-
-  if (BLOCKED_EXTENSIONS.test(file.name)) {
-    return NextResponse.json(
-      { error: "File type not allowed" },
-      { status: 415 }
-    );
-  }
-
   const mimeType = file.type || "application/octet-stream";
-  if (!ALLOWED_MIME_TYPES.has(mimeType) && !mimeType.startsWith("text/")) {
-    return NextResponse.json(
-      { error: "File type not allowed" },
-      { status: 415 }
-    );
+  const issue = validateUpload(file.name, mimeType, file.size);
+  if (issue) {
+    return NextResponse.json({ error: issue.error }, { status: issue.status });
   }
 
   const bytes = await file.arrayBuffer();
@@ -135,7 +79,7 @@ export async function POST(
     return NextResponse.json({ error: "Storage is not configured" }, { status: 503 });
   }
 
-  const isMedia = MEDIA_MIMES.has(mimeType);
+  const isMedia = isMediaMime(mimeType);
 
   let fileUrl = "";
   let rawPath: string | null = null;

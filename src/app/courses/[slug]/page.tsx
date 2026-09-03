@@ -179,11 +179,13 @@ export default function CoursePage({ params }: { params: { slug: string } }) {
         if (courseData.error) { setError(courseData.error); return; }
         setCourse(courseData);
         setIsSaved(courseData.isSaved);
-        setFiles(filesData.files ?? []);
+        // The API returns { materials }; accept both key names defensively.
+        const materialList = filesData.materials ?? filesData.files ?? [];
+        setFiles(materialList);
         // Deep link: select a material via ?material=<fileId>
         const requested = searchParams.get("material");
         if (requested) {
-          const target = (filesData.files ?? []).find((f: MaterialRecord) => f.id === requested);
+          const target = materialList.find((f: MaterialRecord) => f.id === requested);
           if (target) setSelection({ kind: "file", file: target });
         }
       })
