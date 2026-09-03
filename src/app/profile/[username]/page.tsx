@@ -33,7 +33,7 @@ interface Course {
 const EMPTY_STATE: Record<TabKey, { title: string; body: string }> = {
   Courses: {
     title: "No published courses yet",
-    body: "Courses are curated by the Law by Grace administrator. New publications will appear here.",
+    body: "Courses published in the library will appear here as they are added.",
   },
   Saved: {
     title: "No saved courses yet",
@@ -165,7 +165,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
                   <h1 className="font-serif font-bold text-xl md:text-2xl text-on-surface leading-tight">{user.name}</h1>
                   {user.role === "ADMIN" && (
                     <span className="flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
-                      <ShieldCheck className="w-2.5 h-2.5" />Library administrator
+                      <ShieldCheck className="w-2.5 h-2.5" />Library curator
                     </span>
                   )}
                 </div>
@@ -275,7 +275,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
                     ? EMPTY_STATE.Saved.body
                     : tab === "Courses"
                       ? isOwnProfile && isAdmin
-                        ? "Courses you curate for the library will appear here once published. Publish one from the admin area."
+                        ? "Courses you curate for the library will appear here once published. Publish new courses from your dashboard."
                         : user.role === "ADMIN"
                           ? `Courses curated by ${firstName} for the library will appear here as they are published.`
                           : EMPTY_STATE[tab].body
@@ -287,8 +287,8 @@ export default function ProfilePage({ params }: { params: { username: string } }
                   </Link>
                 )}
                 {tab === "Courses" && isOwnProfile && isAdmin && (
-                  <Link href="/admin" className="mt-6 inline-flex items-center gap-2 btn-primary">
-                    <Scale className="w-4 h-4" />Open library admin
+                  <Link href="/dashboard" className="mt-6 inline-flex items-center gap-2 btn-primary">
+                    <Compass className="w-4 h-4" />Go to your dashboard
                   </Link>
                 )}
               </div>
@@ -351,11 +351,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
                 >
                   <Bookmark className="w-4 h-4" /> Saved courses
                 </button>
-                {isAdmin && (
-                  <Link href="/admin" className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
-                    <ShieldCheck className="w-4 h-4" /> Library Admin
-                  </Link>
-                )}
+
                 <Link href="/settings" className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
                   <Settings className="w-4 h-4" /> Account settings
                 </Link>

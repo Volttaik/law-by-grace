@@ -9,7 +9,7 @@ import {
   Eye, Shield, Clock, Share2, Bookmark, BookOpen, FileText, Video,
   ChevronRight, ArrowLeft, Loader2, Download, Check, Scale,
   File as FileIcon, PlayCircle, Image as ImageIcon, Link2,
-  Library, Settings2, GraduationCap, CheckCircle2,
+  Library, GraduationCap, CheckCircle2,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -149,7 +149,6 @@ export default function CoursePage({ params }: { params: { slug: string } }) {
   const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
   const userRole = (session?.user as any)?.role ?? "";
-  const isAdmin = userRole === "ADMIN";
 
   const [course, setCourse] = useState<CourseData | null>(null);
   const [files, setFiles] = useState<MaterialRecord[]>([]);
@@ -350,11 +349,6 @@ export default function CoursePage({ params }: { params: { slug: string } }) {
 
                 {/* Actions */}
                 <div className="flex flex-row flex-wrap lg:flex-col gap-2 shrink-0">
-                  {isAdmin && (
-                    <Link href="/admin" className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold font-manrope bg-surface-container-high border border-outline-variant/40 text-on-surface hover:bg-surface-container transition-all">
-                      <Settings2 className="w-3.5 h-3.5 text-secondary" /> Library Admin
-                    </Link>
-                  )}
                   {session?.user ? (
                     <>
                       <button

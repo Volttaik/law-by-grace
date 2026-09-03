@@ -105,35 +105,12 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {isAdmin && (
-                <Link href="/admin" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold font-manrope bg-surface-container-high border border-outline-variant/40 text-on-surface hover:bg-surface-container transition-all">
-                  <ShieldCheck className="w-3.5 h-3.5 text-secondary" />Library Admin
-                </Link>
-              )}
               <Link href="/explore" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold font-manrope bg-primary text-on-primary hover:brightness-110 transition-all">
                 <Compass className="w-3.5 h-3.5" />Discover the library
               </Link>
             </div>
           </div>
         </section>
-
-        {/* Admin / curator banner */}
-        {isAdmin && (
-          <div className="card p-5 mb-8 bg-gradient-to-r from-primary-container/40 via-secondary-container/30 to-transparent border-primary/10 flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0">
-                <Library className="w-5 h-5 text-on-primary" />
-              </div>
-              <div>
-                <p className="font-manrope font-semibold text-sm text-on-surface">You&apos;re the library administrator</p>
-                <p className="text-xs text-on-surface-variant">Create and manage the courses, materials and articles that make up the Law by Grace library.</p>
-              </div>
-            </div>
-            <Link href="/admin" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline shrink-0">
-              Open Library Admin <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
 
         {/* Stats */}
         <div className={cn("grid grid-cols-2 gap-4 mb-10", isAdmin ? "lg:grid-cols-3" : "lg:grid-cols-2")}>

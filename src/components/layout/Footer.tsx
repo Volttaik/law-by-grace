@@ -2,29 +2,22 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 
 const LINKS = {
-  Library: [
+  Platform: [
+    { label: "Home", href: "/" },
     { label: "Explore the Library", href: "/explore" },
     { label: "Articles", href: "/articles" },
-    { label: "Search", href: "/search" },
-    { label: "Dashboard", href: "/dashboard" },
-  ],
-  Study: [
-    { label: "Legal Courses", href: "/explore" },
-    { label: "Browse by area of law", href: "/explore" },
-    { label: "Read in the app", href: "/explore" },
-    { label: "Articles", href: "/articles" },
-  ],
-  Platform: [
-    { label: "Create an account", href: "/register" },
-    { label: "Sign in", href: "/login" },
-    { label: "Library Admin", href: "/admin/login" },
-    { label: "Contact", href: "mailto:hello@lawbygrace.app" },
+    { label: "About", href: "/about" },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "Cookie Policy", href: "#" },
-    { label: "Licenses", href: "#" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "Legal Disclaimer", href: "/disclaimer" },
+    { label: "Copyright & Intellectual Property", href: "/copyright" },
+    { label: "Cookie Policy", href: "/cookies" },
+  ],
+  Support: [
+    { label: "Help & Support", href: "/support" },
+    { label: "Contact", href: "/contact" },
   ],
 };
 
@@ -34,7 +27,7 @@ export default function Footer() {
       <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-16">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10">
           {/* Brand */}
-          <div className="col-span-2 md:col-span-1 space-y-4">
+          <div className="col-span-2 md:col-span-2 space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -42,11 +35,15 @@ export default function Footer() {
               </div>
               <span className="font-serif font-bold text-lg text-white tracking-tight">Law by Grace</span>
             </div>
-            <p className="text-sm text-white/70 leading-relaxed">
+            <p className="text-sm text-white/70 leading-relaxed max-w-xs">
               A beautiful e-library for law — courses, books, PDFs, videos and articles to help you understand law and study effectively.
             </p>
             <div className="flex items-center gap-3 pt-2">
-              <a href="mailto:hello@lawbygrace.app" className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center hover:bg-white/25 transition-colors">
+              <a
+                href="mailto:hello@lawbygrace.app"
+                aria-label="Email Law by Grace"
+                className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center hover:bg-white/25 transition-colors"
+              >
                 <Mail className="w-4 h-4 text-white" />
               </a>
             </div>

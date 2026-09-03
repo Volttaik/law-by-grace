@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import {
   Search, Menu, X, ChevronDown,
   Settings, LogOut, User, LayoutDashboard, Moon, Sun,
-  Compass, BookOpen, Scale, Palette, ShieldCheck,
+  Compass, BookOpen, Scale, Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -116,15 +116,6 @@ export default function Navbar() {
       ],
     },
   ];
-
-  if (userRole === "ADMIN") {
-    sections.push({
-      label: "Administrator",
-      items: [
-        { href: "/admin", label: "Library Admin", icon: ShieldCheck, desc: "Manage courses & the library" },
-      ],
-    });
-  }
 
   const UserAvatar = ({ size = "sm" }: { size?: "sm" | "md" }) => {
     const cls = size === "sm" ? "w-8 h-8 text-xs" : "w-10 h-10 text-sm";
@@ -297,7 +288,7 @@ export default function Navbar() {
                         { href: username ? `/profile/${username}` : "/dashboard", label: "Profile", icon: User },
                         { href: "/settings", label: "Settings", icon: Settings },
                         { href: "/settings?tab=Appearance", label: "Appearance", icon: Palette },
-                        ...(userRole === "ADMIN" ? [{ href: "/admin", label: "Library Admin", icon: ShieldCheck }] : []),
+
                       ].map(item => (
                         <Link
                           key={item.label}
@@ -364,9 +355,6 @@ export default function Navbar() {
                   <MobileLink href={username ? `/profile/${username}` : "/dashboard"} label="Profile" icon={User} onClick={() => setMobileOpen(false)} />
                   <MobileLink href="/settings" label="Settings" icon={Settings} onClick={() => setMobileOpen(false)} />
                   <MobileLink href="/settings?tab=Appearance" label="Appearance" icon={Palette} onClick={() => setMobileOpen(false)} />
-                  {userRole === "ADMIN" && (
-                    <MobileLink href="/admin" label="Library Admin" icon={ShieldCheck} onClick={() => setMobileOpen(false)} />
-                  )}
                   <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-error hover:bg-error-container/20 transition-colors">
                     <LogOut className="w-4 h-4" />Sign out
                   </button>
