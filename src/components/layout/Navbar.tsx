@@ -85,7 +85,7 @@ export default function Navbar() {
         <img src="/icons/icon.svg" alt="" className="w-full h-full object-cover" />
       </div>
       <div className="leading-none">
-        <span className={cn("font-serif font-bold tracking-tight", small ? "text-base" : "text-lg", "text-on-surface")}>
+        <span className={cn("font-serif font-bold tracking-tight", small ? "text-[11px]" : "text-xs", "text-on-surface")}>
           THE LAW With Gracious
         </span>
       </div>
