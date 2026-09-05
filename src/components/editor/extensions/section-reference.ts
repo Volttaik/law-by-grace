@@ -1,5 +1,4 @@
 import { Node, mergeAttributes } from "@tiptap/core";
-import type { NodeSelection } from "prosemirror-state";
 
 export interface SectionReferenceAttrs {
   /** "image" | "quote" | "text" */
@@ -77,7 +76,12 @@ export const SectionReference = Node.create({
         (attrs) =>
         ({ commands }) =>
           commands.command(({ tr, state }) => {
-            const selection = state.selection as NodeSelection;
+            // Structural cast — avoids importing prosemirror-state directly (it is
+            // only a transitive dependency, which breaks strict pnpm installs).
+            const selection = state.selection as unknown as {
+              node?: { type: { name: string }; attrs: Record<string, unknown> };
+              $from: { pos: number };
+            };
             if (!selection?.node || selection.node.type.name !== this.name) return false;
             tr.setNodeMarkup(selection.$from.pos, undefined, { ...selection.node.attrs, ...attrs });
             return true;
