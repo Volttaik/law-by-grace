@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import {
   Search, Menu, X, ChevronDown,
   Settings, LogOut, User, LayoutDashboard, Moon, Sun,
-  Compass, BookOpen, Scale, Palette,
+  Compass, BookOpen, Scale, Palette, PenLine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -143,6 +143,21 @@ export default function Navbar() {
         </div>
       </div>
       <nav className="flex-1 px-3 py-3 overflow-y-auto">
+        {isAuth && (
+          <Link
+            href="/editor"
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 border",
+              pathname?.startsWith("/editor")
+                ? "bg-primary/10 text-primary border-primary/20"
+                : "bg-primary text-on-primary hover:brightness-110 border-primary"
+            )}
+          >
+            <PenLine className="w-4 h-4 shrink-0" />
+            Create Article
+          </Link>
+        )}
         {sections.map((section, si) => (
           <div key={section.label} className={si > 0 ? "mt-5" : ""}>
             <p className="px-3 pb-1.5 text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest">
@@ -282,6 +297,7 @@ export default function Navbar() {
                         <p className="text-xs text-on-surface-variant">@{username}</p>
                       </div>
                       {[
+                        { href: "/editor", label: "Create Article", icon: PenLine },
                         { href: "/explore", label: "Discover", icon: Compass },
                         { href: "/articles", label: "Articles", icon: BookOpen },
                         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -346,6 +362,9 @@ export default function Navbar() {
             className="lg:hidden origin-top border-t border-outline-variant/20 bg-surface-container-lowest/98 backdrop-blur-md px-4 py-4 max-h-[calc(100vh-4rem)] overflow-y-auto"
           >
             <div className="space-y-1">
+              {isAuth && (
+                <MobileLink href="/editor" label="Create Article" icon={PenLine} onClick={() => setMobileOpen(false)} active={pathname?.startsWith("/editor")} highlighted />
+              )}
               <MobileLink href="/explore" label="Discover" icon={Compass} onClick={() => setMobileOpen(false)} active={pathname === "/explore"} />
               <MobileLink href="/articles" label="Articles" icon={BookOpen} onClick={() => setMobileOpen(false)} active={pathname?.startsWith("/articles")} />
               <MobileLink href="/search" label="Search" icon={Search} onClick={() => setMobileOpen(false)} active={pathname === "/search"} />
@@ -409,9 +428,9 @@ export default function Navbar() {
 }
 
 function MobileLink({
-  href, label, icon: Icon, onClick, active,
+  href, label, icon: Icon, onClick, active, highlighted,
 }: {
-  href: string; label: string; icon: React.ComponentType<{ className?: string }>; onClick: () => void; active?: boolean;
+  href: string; label: string; icon: React.ComponentType<{ className?: string }>; onClick: () => void; active?: boolean; highlighted?: boolean;
 }) {
   return (
     <Link
@@ -419,7 +438,9 @@ function MobileLink({
       onClick={onClick}
       className={cn(
         "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-        active ? "bg-primary/10 text-primary" : "text-on-surface-variant hover:bg-surface-container"
+        highlighted
+          ? "bg-primary text-on-primary font-semibold"
+          : active ? "bg-primary/10 text-primary" : "text-on-surface-variant hover:bg-surface-container"
       )}
     >
       <Icon className="w-4 h-4" />

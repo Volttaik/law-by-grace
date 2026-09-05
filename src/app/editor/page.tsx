@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Heading from "@tiptap/extension-heading";
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
@@ -19,7 +20,7 @@ import TaskItem from "@tiptap/extension-task-item";
 import Link from "next/link";
 import {
   ArrowLeft, Loader2, Cloud, CloudUpload, Check, AlertTriangle, X,
-  BookOpen, ExternalLink, PenLine,
+  BookOpen, ExternalLink, PenLine, Plus, ImagePlus,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ import { ArticleAttachment, courseAttachment, materialAttachment } from "@/compo
 import { SectionReference, emptySectionReference, type SectionReferenceAttrs } from "@/components/editor/extensions/section-reference";
 import { ReferenceDialog } from "@/components/editor/ReferenceDialog";
 import { SectionReferenceView } from "@/components/editor/SectionReferenceView";
+import { SectionHeadingView } from "@/components/editor/SectionHeadingView";
 import { editorActions } from "@/components/editor/actions";
 
 const ImageWithActions = Image.extend({
@@ -51,6 +53,13 @@ const AttachmentWithActions = ArticleAttachment.extend({
 const SectionReferenceWithActions = SectionReference.extend({
   addNodeView() {
     return ReactNodeViewRenderer(SectionReferenceView);
+  },
+});
+
+/** Level-2 headings are article sections — render them with section controls. */
+const SectionHeadingWithActions = Heading.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(SectionHeadingView);
   },
 });
 
@@ -91,6 +100,10 @@ function EditorInner() {
   const [refDialogOpen, setRefDialogOpen] = useState(false);
   const [refDialogInitial, setRefDialogInitial] = useState<SectionReferenceAttrs | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Where the next uploaded image / created reference should land (set by the
+  // section controls so content attaches to the section it was added from).
+  const pendingImagePosRef = useRef<number | null>(null);
+  const pendingRefPosRef = useRef<number | null>(null);
 
   // ── Autosave plumbing (refs keep timers/values out of stale closures) ─────
   const slugRef = useRef<string | null>(null);
@@ -169,6 +182,7 @@ function EditorInner() {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        heading: false,
         link: {
           openOnClick: false,
           autolink: true,
@@ -176,6 +190,7 @@ function EditorInner() {
           HTMLAttributes: { rel: "noopener noreferrer nofollow", target: "_blank" },
         },
       }),
+      SectionHeadingWithActions,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       TextStyle,
       Color,
@@ -303,7 +318,18 @@ function EditorInner() {
   useEffect(() => {
     editorActions.openInlinePicker = () => { setAttachMode("inline"); setAttachOpen(true); };
     editorActions.openReferenceEditor = (attrs) => {
+      // Editing an existing node — not inserting into a section.
+      pendingRefPosRef.current = null;
       setRefDialogInitial(attrs);
+      setRefDialogOpen(true);
+    };
+    editorActions.openSectionImagePicker = (pos) => {
+      pendingImagePosRef.current = pos;
+      fileInputRef.current?.click();
+    };
+    editorActions.openSectionReference = (pos) => {
+      pendingRefPosRef.current = pos;
+      setRefDialogInitial(null);
       setRefDialogOpen(true);
     };
   }, []);
@@ -318,9 +344,40 @@ function EditorInner() {
     ]).run();
   }, []);
 
+  /** Append a new section at the end of the article and select its title. */
+  const addSectionAtEnd = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const pos = editor.state.doc.content.size;
+    const placeholder = "Section title";
+    editor.chain()
+      .focus()
+      .insertContentAt(pos, [
+        { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: placeholder }] },
+        { type: "paragraph" },
+      ])
+      .setTextSelection({ from: pos + 1, to: pos + 1 + placeholder.length })
+      .run();
+  }, []);
+
+  /** Attach an image to the end of the article (its last section). */
+  const addImageAtEnd = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    pendingImagePosRef.current = editor.state.doc.content.size;
+    fileInputRef.current?.click();
+  }, []);
+
   const handleSaveReference = useCallback((attrs: SectionReferenceAttrs) => {
     const editor = editorRef.current;
     if (!editor) return;
+    const pendingPos = pendingRefPosRef.current;
+    if (pendingPos != null) {
+      // Inserted from a section's controls — attach to the end of that section.
+      pendingRefPosRef.current = null;
+      editor.chain().focus().insertContentAt(pendingPos, { type: "sectionReference", attrs }).run();
+      return;
+    }
     const sel = editor.state.selection as unknown as { node?: { type: { name: string } } };
     if (sel?.node?.type?.name === "sectionReference") {
       editor.chain().focus().updateSectionReference(attrs).run();
@@ -412,7 +469,14 @@ function EditorInner() {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || "The image couldn't be uploaded.");
-      editorRef.current.chain().focus().setImage({ src: data.url, alt: file.name }).run();
+      const pos = pendingImagePosRef.current;
+      pendingImagePosRef.current = null;
+      if (pos != null) {
+        // Attached to a specific section (added from its controls).
+        editorRef.current.chain().focus().insertContentAt(pos, { type: "image", attrs: { src: data.url, alt: file.name } }).run();
+      } else {
+        editorRef.current.chain().focus().setImage({ src: data.url, alt: file.name }).run();
+      }
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "The image couldn't be uploaded. Try again.");
     } finally {
@@ -590,10 +654,10 @@ function EditorInner() {
 
       <Toolbar
         editor={editor}
-        onInsertImage={() => fileInputRef.current?.click()}
+        onInsertImage={() => { pendingImagePosRef.current = null; fileInputRef.current?.click(); }}
         onAttachInline={() => { setAttachMode("inline"); setAttachOpen(true); }}
         onInsertSection={insertSection}
-        onInsertReference={() => { setRefDialogInitial(null); setRefDialogOpen(true); }}
+        onInsertReference={() => { pendingRefPosRef.current = null; setRefDialogInitial(null); setRefDialogOpen(true); }}
         rightSlot={rightSlot}
       />
 
@@ -672,6 +736,26 @@ function EditorInner() {
             <EditorContent editor={editor} />
           </div>
 
+          {/* Add section / add image — the obvious places to grow the article */}
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={addSectionAtEnd}
+              onMouseDown={e => e.preventDefault()}
+              className="editor-add-button flex-1"
+            >
+              <Plus className="h-4 w-4" /> Add section
+            </button>
+            <button
+              type="button"
+              onClick={addImageAtEnd}
+              onMouseDown={e => e.preventDefault()}
+              className="editor-add-button flex-1"
+            >
+              <ImagePlus className="h-4 w-4" /> Add image
+            </button>
+          </div>
+
           {wordCount > 0 && (
             <p className="mt-10 text-[11px] text-on-surface-variant/70 border-t border-outline-variant/15 pt-4 flex items-center gap-4">
               <span><PenLine className="h-3 w-3 inline mr-1" />{wordCount} words</span>
@@ -715,7 +799,7 @@ function EditorInner() {
       {/* Section reference dialog (add / edit supporting material) */}
       <ReferenceDialog
         open={refDialogOpen}
-        onClose={() => setRefDialogOpen(false)}
+        onClose={() => { pendingRefPosRef.current = null; setRefDialogOpen(false); }}
         initial={refDialogInitial}
         onSave={handleSaveReference}
       />

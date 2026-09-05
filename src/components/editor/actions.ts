@@ -12,4 +12,8 @@ export const editorActions: {
   openInlinePicker?: () => void;
   /** Opens the reference editor dialog, prefilled for an existing node. */
   openReferenceEditor?: (attrs: SectionReferenceAttrs) => void;
+  /** Opens the image file picker, inserting the image at the given doc position. */
+  openSectionImagePicker?: (pos: number) => void;
+  /** Opens the supporting-material dialog, inserting the reference at the given doc position. */
+  openSectionReference?: (pos: number) => void;
 } = {};
