@@ -190,8 +190,17 @@ function EditorInner() {
 
   // ── Load an existing article (or its draft) ────────────────────────────────
   useEffect(() => {
-    if (!editor || !articleSlug) return;
-    if (loadedForRef.current === articleSlug) return; // just saved it
+    if (!editor) return;
+    if (!articleSlug) {
+      // Fresh article — nothing to load from the server.
+      setLoaded(true);
+      return;
+    }
+    if (loadedForRef.current === articleSlug) {
+      // Just saved this article locally; don't clobber the document.
+      setLoaded(true);
+      return;
+    }
     loadedForRef.current = articleSlug;
 
     (async () => {
