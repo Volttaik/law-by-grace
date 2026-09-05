@@ -10,6 +10,7 @@ import {
   List, ListOrdered, Quote, ChevronDown, Undo, Redo,
   Plus, Image as ImageIcon, Link2, Minus,
   BookOpen, Type, Highlighter, CheckSquare, Code, Eraser,
+  Heading2, Paperclip,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -409,11 +410,15 @@ interface ToolbarProps {
   editor: Editor;
   onInsertImage: () => void;
   onAttachInline: () => void;
+  /** Starts a new article section (H2 heading). */
+  onInsertSection: () => void;
+  /** Opens the supporting-material (section reference) dialog. */
+  onInsertReference: () => void;
   /** Right-pinned cluster (save status + publish) rendered by the page. */
   rightSlot?: React.ReactNode;
 }
 
-export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: ToolbarProps) {
+export function Toolbar({ editor, onInsertImage, onAttachInline, onInsertSection, onInsertReference, rightSlot }: ToolbarProps) {
   const isMobile = useIsMobile();
   const [openPanel, setOpenPanel] = useState<null | "paragraph" | "color" | "size" | "align" | "list" | "insert" | "link">(null);
   const [linkSheetOpen, setLinkSheetOpen] = useState(false);
@@ -481,6 +486,8 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
     TEXT_COLOR_SWATCHES.find(s => s.value && s.value.toLowerCase() === state?.color?.toLowerCase())?.name ?? (state?.color ? "Custom" : "Default");
 
   const insertItems = [
+    { key: "section", label: "New section", desc: "Start a new article section", icon: Heading2, run: onInsertSection },
+    { key: "reference", label: "Supporting material", desc: "Add an image, quote or note to a section", icon: Paperclip, run: onInsertReference },
     { key: "image", label: "Image", desc: "Upload a picture from your device", icon: ImageIcon, run: onInsertImage },
     { key: "attach", label: "Attach course or material", desc: "Reference library content", icon: BookOpen, run: onAttachInline },
     { key: "link", label: "Link", desc: "Add a web link to selected text", icon: Link2, run: openLinkPanel, keepOpen: true },
@@ -490,6 +497,7 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
     { key: "divider", label: "Divider", desc: "Insert a horizontal line", icon: Minus, run: () => editor.chain().focus().setHorizontalRule().run() },
     { key: "clear", label: "Clear formatting", desc: "Remove bold, color, size, links", icon: Eraser, run: () => editor.chain().focus().unsetAllMarks().run() },
   ];
+
 
   const renderInsertMenu = (large: boolean) => (
     <div role="listbox" aria-label="Insert">

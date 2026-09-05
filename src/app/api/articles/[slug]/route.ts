@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { extractImages, resolveArticleBanner } from "@/lib/article-content";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,17 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
 
   await prisma.article.update({ where: { id: article.id }, data: { views: { increment: 1 } } });
 
-  return NextResponse.json({ ...article, tags: JSON.parse(article.tags || "[]"), isOwner: session?.user?.id === article.authorId });
+  const latestContent = article.editions[0]?.content ?? null;
+  const images = latestContent ? extractImages(latestContent) : [];
+
+  return NextResponse.json({
+    ...article,
+    tags: JSON.parse(article.tags || "[]"),
+    banner: resolveArticleBanner(article.coverImage, article.id),
+    images: images.slice(0, 5),
+    imageCount: images.length,
+    isOwner: session?.user?.id === article.authorId,
+  });
 }
 
 /** Validate that a referenceCourseId points at a real, readable course. */

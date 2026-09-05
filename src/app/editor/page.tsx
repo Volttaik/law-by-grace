@@ -31,6 +31,9 @@ import { ImageView } from "@/components/editor/ImageView";
 import { ArticleAttachmentView } from "@/components/editor/ArticleAttachmentView";
 import { FontSize } from "@/components/editor/extensions/font-size";
 import { ArticleAttachment, courseAttachment, materialAttachment } from "@/components/editor/extensions/article-attachment";
+import { SectionReference, emptySectionReference, type SectionReferenceAttrs } from "@/components/editor/extensions/section-reference";
+import { ReferenceDialog } from "@/components/editor/ReferenceDialog";
+import { SectionReferenceView } from "@/components/editor/SectionReferenceView";
 import { editorActions } from "@/components/editor/actions";
 
 const ImageWithActions = Image.extend({
@@ -42,6 +45,12 @@ const ImageWithActions = Image.extend({
 const AttachmentWithActions = ArticleAttachment.extend({
   addNodeView() {
     return ReactNodeViewRenderer(ArticleAttachmentView);
+  },
+});
+
+const SectionReferenceWithActions = SectionReference.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(SectionReferenceView);
   },
 });
 
@@ -77,6 +86,10 @@ function EditorInner() {
   const [attachMode, setAttachMode] = useState<"reference" | "inline">("reference");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [banner, setBanner] = useState<string | null>(null);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [refDialogOpen, setRefDialogOpen] = useState(false);
+  const [refDialogInitial, setRefDialogInitial] = useState<SectionReferenceAttrs | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Autosave plumbing (refs keep timers/values out of stale closures) ─────
@@ -85,6 +98,7 @@ function EditorInner() {
   const summaryRef = useRef(summary);
   const tagsRef = useRef(tags);
   const referenceRef = useRef<CourseSummary | null>(null);
+  const bannerRef = useRef<string | null>(null);
   const dirtyRef = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadedForRef = useRef<string | null>(null);
@@ -129,6 +143,7 @@ function EditorInner() {
           summary: summaryRef.current,
           tags: tagsRef.current,
           referenceCourseId: referenceRef.current?.id ?? null,
+          coverImage: bannerRef.current ?? null,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -172,6 +187,7 @@ function EditorInner() {
       TaskItem.configure({ nested: true }),
       ImageWithActions.configure({ inline: false, allowBase64: true }),
       AttachmentWithActions,
+      SectionReferenceWithActions,
       Placeholder.configure({ placeholder: "Start writing your article…" }),
       CharacterCount,
     ],
@@ -220,6 +236,9 @@ function EditorInner() {
           setReferenceCourse(rc);
           referenceRef.current = rc;
         }
+        const cv = typeof data.coverImage === "string" ? data.coverImage : null;
+        setBanner(cv);
+        bannerRef.current = cv;
 
         // Prefer the in-progress draft; fall back to the latest published edition.
         let content: string | null = null;
@@ -280,9 +299,62 @@ function EditorInner() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // ── Expose the inline picker to attachment NodeViews (replace action) ──────
+  // ── Expose pickers to NodeViews (replace/edit actions) ─────────────────────
   useEffect(() => {
     editorActions.openInlinePicker = () => { setAttachMode("inline"); setAttachOpen(true); };
+    editorActions.openReferenceEditor = (attrs) => {
+      setRefDialogInitial(attrs);
+      setRefDialogOpen(true);
+    };
+  }, []);
+
+  // ── Sections & references ──────────────────────────────────────────────────
+  const insertSection = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.chain().focus().insertContent([
+      { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Section title" }] },
+      { type: "paragraph" },
+    ]).run();
+  }, []);
+
+  const handleSaveReference = useCallback((attrs: SectionReferenceAttrs) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const sel = editor.state.selection as unknown as { node?: { type: { name: string } } };
+    if (sel?.node?.type?.name === "sectionReference") {
+      editor.chain().focus().updateSectionReference(attrs).run();
+    } else {
+      editor.chain().focus().setSectionReference(attrs).run();
+    }
+  }, []);
+
+  // ── Banner ──────────────────────────────────────────────────────────────────
+  const handleBannerUpload = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) { setUploadError("Please choose an image file for the banner."); return; }
+    if (file.size > 10 * 1024 * 1024) { setUploadError("Banner images must be under 10 MB."); return; }
+    setUploadingBanner(true);
+    setUploadError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "The banner couldn't be uploaded.");
+      bannerRef.current = data.url;
+      setBanner(data.url);
+      persistRef.current(true);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "The banner couldn't be uploaded.");
+    } finally {
+      setUploadingBanner(false);
+    }
+  }, []);
+
+  const handleBannerRemove = useCallback(() => {
+    bannerRef.current = null;
+    setBanner(null);
+    persistRef.current(true);
   }, []);
 
   // ── Reference course ───────────────────────────────────────────────────────
@@ -392,6 +464,7 @@ function EditorInner() {
           summary: meta.summary,
           tags: tagsArr,
           referenceCourseId: referenceRef.current.id,
+          coverImage: bannerRef.current ?? null,
         }),
       });
       const draftData = await draftRes.json().catch(() => ({}));
@@ -519,6 +592,8 @@ function EditorInner() {
         editor={editor}
         onInsertImage={() => fileInputRef.current?.click()}
         onAttachInline={() => { setAttachMode("inline"); setAttachOpen(true); }}
+        onInsertSection={insertSection}
+        onInsertReference={() => { setRefDialogInitial(null); setRefDialogOpen(true); }}
         rightSlot={rightSlot}
       />
 
@@ -637,6 +712,14 @@ function EditorInner() {
         onSelectMaterial={handleSelectMaterial}
       />
 
+      {/* Section reference dialog (add / edit supporting material) */}
+      <ReferenceDialog
+        open={refDialogOpen}
+        onClose={() => setRefDialogOpen(false)}
+        initial={refDialogInitial}
+        onSave={handleSaveReference}
+      />
+
       {/* Publish dialog */}
       <PublishDialog
         open={showPublish}
@@ -647,6 +730,10 @@ function EditorInner() {
         referenceCourse={referenceCourse}
         saving={saving}
         serverError={publishError}
+        banner={banner}
+        uploadingBanner={uploadingBanner}
+        onBannerUpload={handleBannerUpload}
+        onBannerRemove={handleBannerRemove}
         onPublish={publishArticle}
         onAttachReference={openReferencePicker}
       />

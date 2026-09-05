@@ -48,6 +48,10 @@ export async function PUT(req: Request, { params }: { params: { slug: string } }
   if (typeof body.summary === "string") meta.summary = body.summary;
   if (Array.isArray(body.tags)) meta.tags = JSON.stringify(body.tags);
 
+  if (body.coverImage !== undefined) {
+    meta.coverImage = body.coverImage || null;
+  }
+
   // Reference course changes are persisted through the draft save too, so the
   // article always carries its stable course reference even before publishing.
   if (body.referenceCourseId !== undefined) {

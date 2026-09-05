@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Loader2, BookOpen, Link2, CheckCircle2 } from "lucide-react";
+import { X, Sparkles, Loader2, BookOpen, Link2, CheckCircle2, ImagePlus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CourseSummary } from "./AttachmentPicker";
 
@@ -15,6 +15,11 @@ interface PublishDialogProps {
   referenceCourse: CourseSummary | null;
   saving: boolean;
   serverError: string | null;
+  /** Current article banner (resolved) — null means a default banner is used. */
+  banner: string | null;
+  uploadingBanner: boolean;
+  onBannerUpload: (file: File) => void;
+  onBannerRemove: () => void;
   onPublish: (meta: { title: string; summary: string; tags: string }) => void;
   onAttachReference: () => void;
 }
@@ -22,10 +27,12 @@ interface PublishDialogProps {
 export function PublishDialog({
   open, onClose, initialTitle, initialSummary, initialTags,
   referenceCourse, saving, serverError, onPublish, onAttachReference,
+  banner, uploadingBanner, onBannerUpload, onBannerRemove,
 }: PublishDialogProps) {
   const [title, setTitle] = useState(initialTitle);
   const [summary, setSummary] = useState(initialSummary);
   const [tags, setTags] = useState(initialTags);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -114,6 +121,50 @@ export function PublishDialog({
                   {serverError}
                 </div>
               )}
+
+              {/* Article banner */}
+              <div>
+                <label className="text-sm font-medium text-on-surface block mb-1.5">Article banner</label>
+                <div className="relative rounded-xl overflow-hidden border border-outline-variant/30">
+                  {banner ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={banner} alt="Article banner" className="w-full h-28 object-cover" />
+                  ) : (
+                    <div className="w-full h-28 flex items-center justify-center bg-surface-container-low text-on-surface-variant text-sm">
+                      No custom banner — a default one will be used
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => bannerInputRef.current?.click()}
+                      disabled={uploadingBanner}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest/95 border border-outline-variant/40 text-xs font-semibold text-on-surface hover:border-primary/50 hover:text-primary transition-colors"
+                    >
+                      {uploadingBanner ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+                      {banner ? "Change" : "Upload"}
+                    </button>
+                    {banner && (
+                      <button
+                        type="button"
+                        onClick={onBannerRemove}
+                        aria-label="Remove banner"
+                        className="p-1.5 rounded-lg bg-surface-container-lowest/95 border border-outline-variant/40 text-on-surface-variant hover:text-error transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  ref={bannerInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) onBannerUpload(f); e.target.value = ""; }}
+                />
+                <p className="text-[11px] text-on-surface-variant/80 mt-1.5">The banner appears on the article card and in shared links.</p>
+              </div>
 
               <div>
                 <label className="text-sm font-medium text-on-surface block mb-1.5">Title *</label>
