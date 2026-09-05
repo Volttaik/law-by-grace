@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, forwardRef } from "react";
+import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/react";
 import { useEditorState } from "@tiptap/react";
 import {
-  Bold, Italic, Underline as UnderlineIcon,
+  Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, Quote, ChevronDown, Undo, Redo,
   Plus, Image as ImageIcon, Link2, Minus,
-  BookOpen, Type,
+  BookOpen, Type, Highlighter, CheckSquare, Code, Eraser,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -56,7 +57,7 @@ function IconBtn({ label, active, disabled, onClick, children }: IconBtnProps) {
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "h-11 w-11 md:h-9 md:w-9 shrink-0 rounded-lg flex items-center justify-center transition-all",
+        "h-10 w-10 md:h-9 md:w-9 shrink-0 rounded-lg flex items-center justify-center transition-all",
         "focus-visible:outline-2 focus-visible:outline-primary",
         active
           ? "bg-primary-container/70 text-on-primary-container"
@@ -84,7 +85,7 @@ const LabelBtn = forwardRef<HTMLButtonElement, {
     aria-expanded={open}
     onClick={onClick}
     className={cn(
-      "h-11 md:h-9 shrink-0 flex items-center gap-1.5 px-3 rounded-lg text-xs font-semibold transition-all",
+      "h-10 md:h-9 shrink-0 flex items-center gap-1.5 px-3 rounded-lg text-xs font-semibold transition-all",
       "focus-visible:outline-2 focus-visible:outline-primary",
       open || active
         ? "bg-primary-container/70 text-on-primary-container"
@@ -92,13 +93,13 @@ const LabelBtn = forwardRef<HTMLButtonElement, {
     )}
   >
     {icon}
-    <span className="max-w-[110px] truncate">{label}</span>
+    <span className="max-w-[100px] truncate">{label}</span>
     <ChevronDown className={cn("h-3.5 w-3.5 text-on-surface-variant transition-transform shrink-0", open && "rotate-180")} />
   </button>
 ));
 LabelBtn.displayName = "LabelBtn";
 
-/** Desktop popover anchored under a trigger button, rendered at body level so the scrollable toolbar never clips it. */
+/** Desktop popover anchored under a trigger button, portaled to <body>. */
 function ToolbarPopover({
   open, onClose, triggerRef, children, width = 300,
 }: {
@@ -132,7 +133,9 @@ function ToolbarPopover({
 
   useClickOutside(panelRef, onClose);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -150,7 +153,8 @@ function ToolbarPopover({
           {children}
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 
@@ -421,7 +425,6 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
   const alignRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLButtonElement>(null);
   const insertRef = useRef<HTMLButtonElement>(null);
-  const linkRef = useRef<HTMLButtonElement>(null);
 
   const close = useCallback(() => setOpenPanel(null), []);
 
@@ -434,6 +437,7 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
         isBold: ed.isActive("bold"),
         isItalic: ed.isActive("italic"),
         isUnderline: ed.isActive("underline"),
+        isStrike: ed.isActive("strike"),
         canUndo: ed.can().undo(),
         canRedo: ed.can().redo(),
         color: textStyle.color ?? null,
@@ -476,13 +480,161 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
   const activeColorName =
     TEXT_COLOR_SWATCHES.find(s => s.value && s.value.toLowerCase() === state?.color?.toLowerCase())?.name ?? (state?.color ? "Custom" : "Default");
 
+  const insertItems = [
+    { key: "image", label: "Image", desc: "Upload a picture from your device", icon: ImageIcon, run: onInsertImage },
+    { key: "attach", label: "Attach course or material", desc: "Reference library content", icon: BookOpen, run: onAttachInline },
+    { key: "link", label: "Link", desc: "Add a web link to selected text", icon: Link2, run: openLinkPanel, keepOpen: true },
+    { key: "highlight", label: "Highlight", desc: "Mark text with a color", icon: Highlighter, run: () => editor.chain().focus().toggleHighlight({ color: "#fef08a" }).run() },
+    { key: "task", label: "Task list", desc: "Checkable to-do items", icon: CheckSquare, run: () => editor.chain().focus().toggleTaskList().run() },
+    { key: "code", label: "Code", desc: "Format text as code", icon: Code, run: () => editor.chain().focus().toggleCode().run() },
+    { key: "divider", label: "Divider", desc: "Insert a horizontal line", icon: Minus, run: () => editor.chain().focus().setHorizontalRule().run() },
+    { key: "clear", label: "Clear formatting", desc: "Remove bold, color, size, links", icon: Eraser, run: () => editor.chain().focus().unsetAllMarks().run() },
+  ];
+
+  const renderInsertMenu = (large: boolean) => (
+    <div role="listbox" aria-label="Insert">
+      {insertItems.map(it => (
+        <button
+          key={it.key}
+          type="button"
+          onClick={() => { it.run(); if (!it.keepOpen) { close(); setInsertSheetOpen(false); } }}
+          className={cn(
+            "w-full flex items-start gap-3 rounded-lg hover:bg-surface-container transition-colors text-left",
+            large ? "px-3 py-3.5" : "px-3 py-2.5"
+          )}
+        >
+          <span className="shrink-0 mt-0.5 w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+            <it.icon className="h-4 w-4" />
+          </span>
+          <span>
+            <span className="block text-sm font-medium text-on-surface">{it.label}</span>
+            <span className="block text-xs text-on-surface-variant">{it.desc}</span>
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+
+  // Scrollable row with a subtle right-edge fade hinting more controls.
+  const ScrollRow = ({ children }: { children: React.ReactNode }) => (
+    <div className="relative flex-1 min-w-0">
+      <div className="flex items-center gap-0.5 overflow-x-auto no-scrollbar px-2 py-1">{children}</div>
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-surface-container-lowest/90 to-transparent md:hidden" aria-hidden />
+    </div>
+  );
+
   return (
     <header className="editor-toolbar sticky top-16 z-40 bg-surface-container-lowest/95 backdrop-blur-sm border-b border-outline-variant/15 shadow-sm">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-stretch">
-          {/* Scrollable control area */}
-          <div className="flex-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar px-2 md:px-3 py-1.5">
-            {/* Paragraph style */}
+        {/* ── Mobile: two compact rows ─────────────────────────────────── */}
+        <div className="md:hidden">
+          {/* Row 1 — text formatting */}
+          <div className="flex items-stretch">
+            <ScrollRow>
+              <LabelBtn
+                ref={paragraphRef}
+                label={headingLabel}
+                open={openPanel === "paragraph"}
+                onClick={() => togglePanel("paragraph")}
+                icon={<Type className="h-3.5 w-3.5 shrink-0" />}
+              />
+              <ToolbarDivider />
+              <IconBtn label="Bold" active={state?.isBold} onClick={() => editor.chain().focus().toggleBold().run()}>
+                <Bold className="h-4 w-4" />
+              </IconBtn>
+              <IconBtn label="Italic" active={state?.isItalic} onClick={() => editor.chain().focus().toggleItalic().run()}>
+                <Italic className="h-4 w-4" />
+              </IconBtn>
+              <IconBtn label="Underline" active={state?.isUnderline} onClick={() => editor.chain().focus().toggleUnderline().run()}>
+                <UnderlineIcon className="h-4 w-4" />
+              </IconBtn>
+              <IconBtn label="Strikethrough" active={state?.isStrike} onClick={() => editor.chain().focus().toggleStrike().run()}>
+                <Strikethrough className="h-4 w-4" />
+              </IconBtn>
+              <ToolbarDivider />
+              <button
+                ref={colorRef}
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded={openPanel === "color"}
+                aria-label={`Text color (${activeColorName})`}
+                title="Text color"
+                onClick={() => togglePanel("color")}
+                className={cn(
+                  "h-10 w-10 shrink-0 rounded-lg flex flex-col items-center justify-center gap-[3px] transition-all",
+                  state?.color ? "bg-primary-container/70" : "hover:bg-surface-container"
+                )}
+              >
+                <span className="text-sm font-bold leading-none text-on-surface">A</span>
+                <span className="h-[3px] w-5 rounded-full" style={{ background: state?.color ?? "rgb(var(--c-outline))" }} />
+              </button>
+              <button
+                ref={sizeRef}
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded={openPanel === "size"}
+                aria-label={`Text size (${currentSize}px)`}
+                title="Text size"
+                onClick={() => togglePanel("size")}
+                className={cn(
+                  "h-10 shrink-0 flex items-center gap-1 px-2.5 rounded-lg text-xs font-semibold transition-all",
+                  state?.fontSize ? "bg-primary-container/70 text-on-primary-container" : "text-on-surface-variant hover:bg-surface-container"
+                )}
+              >
+                <span className="text-sm font-bold leading-none">A</span>
+                <span className="text-[10px] font-semibold">{currentSize}</span>
+              </button>
+            </ScrollRow>
+          </div>
+
+          {/* Row 2 — paragraph, insert, history */}
+          <div className="flex items-stretch border-t border-outline-variant/10">
+            <ScrollRow>
+              <LabelBtn
+                ref={alignRef}
+                label={state?.align === "left" ? "Left" : state?.align === "justify" ? "Justify" : state?.align === "center" ? "Center" : "Right"}
+                open={openPanel === "align"}
+                onClick={() => togglePanel("align")}
+                icon={<AlignIcon className="h-4 w-4 shrink-0" />}
+              />
+              <LabelBtn
+                ref={listRef}
+                label={state?.bulletOn ? "Bullets" : state?.orderedOn ? "Numbered" : "List"}
+                open={openPanel === "list"}
+                onClick={() => togglePanel("list")}
+                active={state?.bulletOn || state?.orderedOn}
+                icon={state?.orderedOn ? <ListOrdered className="h-4 w-4 shrink-0" /> : <List className="h-4 w-4 shrink-0" />}
+              />
+              <IconBtn label="Quote" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
+                <Quote className="h-4 w-4" />
+              </IconBtn>
+              <ToolbarDivider />
+              <LabelBtn
+                ref={insertRef}
+                label="Insert"
+                open={openPanel === "insert"}
+                onClick={() => { setInsertSheetOpen(true); }}
+                icon={<Plus className="h-4 w-4 shrink-0" />}
+              />
+              <ToolbarDivider />
+              <IconBtn label="Undo" disabled={!state?.canUndo} onClick={() => editor.chain().focus().undo().run()}>
+                <Undo className="h-4 w-4" />
+              </IconBtn>
+              <IconBtn label="Redo" disabled={!state?.canRedo} onClick={() => editor.chain().focus().redo().run()}>
+                <Redo className="h-4 w-4" />
+              </IconBtn>
+            </ScrollRow>
+            {rightSlot && (
+              <div className="shrink-0 flex items-center gap-1.5 pl-2 pr-3 border-l border-outline-variant/15">
+                {rightSlot}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Desktop: single row ──────────────────────────────────────── */}
+        <div className="hidden md:flex items-stretch">
+          <div className="flex-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar px-2 py-1.5">
             <LabelBtn
               ref={paragraphRef}
               label={headingLabel}
@@ -490,17 +642,7 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
               onClick={() => togglePanel("paragraph")}
               icon={<Type className="h-3.5 w-3.5 shrink-0" />}
             />
-            <ToolbarPopover
-              open={openPanel === "paragraph" && !isMobile}
-              onClose={close}
-              triggerRef={paragraphRef}
-              width={200}
-            >
-              <ParagraphMenu editor={editor} onClose={close} />
-            </ToolbarPopover>
             <ToolbarDivider />
-
-            {/* Text: bold / italic / underline */}
             <IconBtn label="Bold" active={state?.isBold} onClick={() => editor.chain().focus().toggleBold().run()}>
               <Bold className="h-4 w-4" />
             </IconBtn>
@@ -510,9 +652,10 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
             <IconBtn label="Underline" active={state?.isUnderline} onClick={() => editor.chain().focus().toggleUnderline().run()}>
               <UnderlineIcon className="h-4 w-4" />
             </IconBtn>
+            <IconBtn label="Strikethrough" active={state?.isStrike} onClick={() => editor.chain().focus().toggleStrike().run()}>
+              <Strikethrough className="h-4 w-4" />
+            </IconBtn>
             <ToolbarDivider />
-
-            {/* Text color */}
             <button
               ref={colorRef}
               type="button"
@@ -522,27 +665,13 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
               title={`Text color — ${activeColorName}`}
               onClick={() => togglePanel("color")}
               className={cn(
-                "h-11 w-11 md:h-9 md:w-9 shrink-0 rounded-lg flex flex-col items-center justify-center gap-[3px] transition-all",
-                "focus-visible:outline-2 focus-visible:outline-primary",
+                "h-9 w-9 shrink-0 rounded-lg flex flex-col items-center justify-center gap-[3px] transition-all",
                 state?.color ? "bg-primary-container/70" : "hover:bg-surface-container"
               )}
             >
               <span className="text-sm font-bold leading-none text-on-surface">A</span>
-              <span
-                className="h-[3px] w-5 rounded-full"
-                style={{ background: state?.color ?? "rgb(var(--c-outline))" }}
-              />
+              <span className="h-[3px] w-5 rounded-full" style={{ background: state?.color ?? "rgb(var(--c-outline))" }} />
             </button>
-            <ToolbarPopover
-              open={openPanel === "color" && !isMobile}
-              onClose={close}
-              triggerRef={colorRef}
-              width={324}
-            >
-              <ColorPickerContent current={state?.color ?? null} onPick={applyColor} />
-            </ToolbarPopover>
-
-            {/* Text size */}
             <button
               ref={sizeRef}
               type="button"
@@ -552,25 +681,14 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
               title="Text size"
               onClick={() => togglePanel("size")}
               className={cn(
-                "h-11 md:h-9 shrink-0 flex items-center gap-1 px-2.5 rounded-lg text-xs font-semibold transition-all",
-                "focus-visible:outline-2 focus-visible:outline-primary",
-                state?.fontSize ? "bg-primary-container/70 text-on-primary-container" : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
+                "h-9 shrink-0 flex items-center gap-1 px-2.5 rounded-lg text-xs font-semibold transition-all",
+                state?.fontSize ? "bg-primary-container/70 text-on-primary-container" : "text-on-surface-variant hover:bg-surface-container"
               )}
             >
               <span className="text-sm font-bold leading-none">A</span>
               <span className="text-[10px] font-semibold">{currentSize}</span>
             </button>
-            <ToolbarPopover
-              open={openPanel === "size" && !isMobile}
-              onClose={close}
-              triggerRef={sizeRef}
-              width={280}
-            >
-              <FontSizePanel editor={editor} onClose={close} />
-            </ToolbarPopover>
             <ToolbarDivider />
-
-            {/* Alignment */}
             <LabelBtn
               ref={alignRef}
               label={state?.align === "left" ? "Left" : state?.align === "justify" ? "Justify" : state?.align === "center" ? "Center" : "Right"}
@@ -578,16 +696,6 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
               onClick={() => togglePanel("align")}
               icon={<AlignIcon className="h-4 w-4 shrink-0" />}
             />
-            <ToolbarPopover
-              open={openPanel === "align" && !isMobile}
-              onClose={close}
-              triggerRef={alignRef}
-              width={220}
-            >
-              <AlignMenu editor={editor} onClose={close} />
-            </ToolbarPopover>
-
-            {/* Lists */}
             <LabelBtn
               ref={listRef}
               label={state?.bulletOn ? "Bullets" : state?.orderedOn ? "Numbered" : "List"}
@@ -596,22 +704,10 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
               active={state?.bulletOn || state?.orderedOn}
               icon={state?.orderedOn ? <ListOrdered className="h-4 w-4 shrink-0" /> : <List className="h-4 w-4 shrink-0" />}
             />
-            <ToolbarPopover
-              open={openPanel === "list" && !isMobile}
-              onClose={close}
-              triggerRef={listRef}
-              width={240}
-            >
-              <ListMenu editor={editor} onClose={close} />
-            </ToolbarPopover>
-
-            {/* Quote */}
             <IconBtn label="Quote" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
               <Quote className="h-4 w-4" />
             </IconBtn>
             <ToolbarDivider />
-
-            {/* Insert */}
             <LabelBtn
               ref={insertRef}
               label="Insert"
@@ -619,69 +715,46 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
               onClick={() => { if (isMobile) setInsertSheetOpen(true); else togglePanel("insert"); }}
               icon={<Plus className="h-4 w-4 shrink-0" />}
             />
-            <ToolbarPopover
-              open={openPanel === "insert" && !isMobile}
-              onClose={close}
-              triggerRef={insertRef}
-              width={260}
-            >
-              <div role="listbox" aria-label="Insert">
-                {[
-                  { key: "image", label: "Image", desc: "Upload a picture from your device", icon: ImageIcon, run: onInsertImage },
-                  { key: "attach", label: "Attach course or material", desc: "Reference library content", icon: BookOpen, run: onAttachInline },
-                  { key: "link", label: "Link", desc: "Add a web link to selected text", icon: Link2, run: openLinkPanel, keepOpen: true },
-                  { key: "divider", label: "Divider", desc: "Insert a horizontal line", icon: Minus, run: () => editor.chain().focus().setHorizontalRule().run() },
-                ].map(it => (
-                  <button
-                    key={it.key}
-                    type="button"
-                    onClick={() => { it.run(); if (!it.keepOpen) close(); }}
-                    className="w-full flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-container transition-colors text-left"
-                  >
-                    <span className="shrink-0 mt-0.5 w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
-                      <it.icon className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-medium text-on-surface">{it.label}</span>
-                      <span className="block text-xs text-on-surface-variant">{it.desc}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </ToolbarPopover>
-
-            {/* Link popover (desktop) — anchored at the insert button */}
-            <ToolbarPopover
-              open={openPanel === "link" && !isMobile}
-              onClose={close}
-              triggerRef={insertRef}
-              width={320}
-            >
-              <LinkPanel editor={editor} onClose={close} />
-            </ToolbarPopover>
             <ToolbarDivider />
-
-            {/* History */}
             <IconBtn label="Undo" disabled={!state?.canUndo} onClick={() => editor.chain().focus().undo().run()}>
               <Undo className="h-4 w-4" />
             </IconBtn>
             <IconBtn label="Redo" disabled={!state?.canRedo} onClick={() => editor.chain().focus().redo().run()}>
               <Redo className="h-4 w-4" />
             </IconBtn>
-
-            <div className="w-2 shrink-0" aria-hidden />
           </div>
-
-          {/* Pinned right cluster */}
           {rightSlot && (
-            <div className="shrink-0 flex items-center gap-1.5 pl-2 pr-3 border-l border-outline-variant/15 bg-surface-container-lowest/95">
+            <div className="shrink-0 flex items-center gap-1.5 pl-2 pr-3 border-l border-outline-variant/15">
               {rightSlot}
             </div>
           )}
         </div>
       </div>
 
-      {/* Mobile bottom sheets */}
+      {/* Desktop popovers (portaled) */}
+      <ToolbarPopover open={openPanel === "paragraph" && !isMobile} onClose={close} triggerRef={paragraphRef} width={200}>
+        <ParagraphMenu editor={editor} onClose={close} />
+      </ToolbarPopover>
+      <ToolbarPopover open={openPanel === "color" && !isMobile} onClose={close} triggerRef={colorRef} width={324}>
+        <ColorPickerContent current={state?.color ?? null} onPick={applyColor} />
+      </ToolbarPopover>
+      <ToolbarPopover open={openPanel === "size" && !isMobile} onClose={close} triggerRef={sizeRef} width={280}>
+        <FontSizePanel editor={editor} onClose={close} />
+      </ToolbarPopover>
+      <ToolbarPopover open={openPanel === "align" && !isMobile} onClose={close} triggerRef={alignRef} width={220}>
+        <AlignMenu editor={editor} onClose={close} />
+      </ToolbarPopover>
+      <ToolbarPopover open={openPanel === "list" && !isMobile} onClose={close} triggerRef={listRef} width={240}>
+        <ListMenu editor={editor} onClose={close} />
+      </ToolbarPopover>
+      <ToolbarPopover open={openPanel === "insert" && !isMobile} onClose={close} triggerRef={insertRef} width={270}>
+        {renderInsertMenu(false)}
+      </ToolbarPopover>
+      <ToolbarPopover open={openPanel === "link" && !isMobile} onClose={close} triggerRef={insertRef} width={320}>
+        <LinkPanel editor={editor} onClose={close} />
+      </ToolbarPopover>
+
+      {/* Mobile bottom sheets (portaled) */}
       <BottomSheet open={openPanel === "paragraph" && isMobile} onClose={close} title="Paragraph style">
         <ParagraphMenu editor={editor} onClose={close} />
       </BottomSheet>
@@ -701,29 +774,7 @@ export function Toolbar({ editor, onInsertImage, onAttachInline, rightSlot }: To
         <LinkPanel editor={editor} onClose={() => setLinkSheetOpen(false)} large />
       </BottomSheet>
       <BottomSheet open={insertSheetOpen} onClose={() => setInsertSheetOpen(false)} title="Insert">
-        <div role="listbox" aria-label="Insert">
-          {[
-            { key: "image", label: "Image", desc: "Upload a picture from your device", icon: ImageIcon, run: onInsertImage },
-            { key: "attach", label: "Attach course or material", desc: "Reference library content", icon: BookOpen, run: onAttachInline },
-            { key: "link", label: "Link", desc: "Add a web link to selected text", icon: Link2, run: openLinkPanel, keepOpen: true },
-            { key: "divider", label: "Divider", desc: "Insert a horizontal line", icon: Minus, run: () => editor.chain().focus().setHorizontalRule().run() },
-          ].map(it => (
-            <button
-              key={it.key}
-              type="button"
-              onClick={() => { it.run(); if (!it.keepOpen) setInsertSheetOpen(false); }}
-              className="w-full flex items-start gap-3 px-3 py-3.5 rounded-lg hover:bg-surface-container transition-colors text-left"
-            >
-              <span className="shrink-0 mt-0.5 w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
-                <it.icon className="h-4 w-4" />
-              </span>
-              <span>
-                <span className="block text-sm font-medium text-on-surface">{it.label}</span>
-                <span className="block text-xs text-on-surface-variant">{it.desc}</span>
-              </span>
-            </button>
-          ))}
-        </div>
+        {renderInsertMenu(true)}
       </BottomSheet>
     </header>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -15,10 +16,14 @@ interface BottomSheetProps {
 
 /**
  * Modal container used by every editor picker. Slides up from the bottom on
- * phones; renders as a centered dialog on larger screens. Locks body scroll
- * while open and closes on Escape.
+ * phones; renders as a centered dialog on larger screens. Rendered through a
+ * portal into <body> so `position: fixed` is never affected by ancestor
+ * transforms/backdrop-filters (the toolbar has a backdrop blur).
  */
 export function BottomSheet({ open, onClose, title, children, centered = false }: BottomSheetProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -33,7 +38,9 @@ export function BottomSheet({ open, onClose, title, children, centered = false }
     };
   }, [open, onClose]);
 
-  return (
+  if (!mounted || typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -100,6 +107,7 @@ export function BottomSheet({ open, onClose, title, children, centered = false }
           )}
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
