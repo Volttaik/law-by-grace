@@ -22,8 +22,27 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const article = await prisma.article.findUnique({ where: { slug: params.slug }, select: { id: true, authorId: true } });
+  const article = await prisma.article.findUnique({
+    where: { slug: params.slug },
+    select: { id: true, authorId: true, referenceCourseId: true },
+  });
   if (!article || article.authorId !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  // Publishing an edition requires a valid reference course — server-side check
+  // so the requirement can never be bypassed from the client.
+  if (!article.referenceCourseId) {
+    return NextResponse.json(
+      { error: "A reference course is required before publishing. Attach a reference course to this article first." },
+      { status: 400 }
+    );
+  }
+  const referenceCourse = await prisma.course.findUnique({ where: { id: article.referenceCourseId } });
+  if (!referenceCourse || !referenceCourse.isPublic) {
+    return NextResponse.json(
+      { error: "The article's reference course is no longer available. Re-attach a reference course before publishing." },
+      { status: 400 }
+    );
+  }
 
   const body = await req.json();
   const { content, connectors } = body;

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -16,348 +16,631 @@ import Highlight from "@tiptap/extension-highlight";
 import Typography from "@tiptap/extension-typography";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
-import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import {
-  Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  List, ListOrdered, Quote, Code, Minus, Image as ImageIcon,
-  Undo, Redo, Type, Highlighter, CheckSquare,
-  BookOpen, ChevronDown, X, Loader2, ArrowLeft,
-  Sparkles,
+  ArrowLeft, Loader2, Cloud, CloudUpload, Check, AlertTriangle, X,
+  BookOpen, ExternalLink, PenLine,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { cn } from "@/lib/utils";
+import { Toolbar } from "@/components/editor/Toolbar";
+import { AttachmentPicker, type CourseSummary, type MaterialSummary } from "@/components/editor/AttachmentPicker";
+import { ReferenceCourseBar } from "@/components/editor/ReferenceCourseBar";
+import { PublishDialog } from "@/components/editor/PublishDialog";
+import { ImageView } from "@/components/editor/ImageView";
+import { ArticleAttachmentView } from "@/components/editor/ArticleAttachmentView";
+import { FontSize } from "@/components/editor/extensions/font-size";
+import { ArticleAttachment, courseAttachment, materialAttachment } from "@/components/editor/extensions/article-attachment";
+import { editorActions } from "@/components/editor/actions";
 
-const HEADINGS = [
-  { label: "Normal", level: 0 },
-  { label: "Heading 1", level: 1 },
-  { label: "Heading 2", level: 2 },
-  { label: "Heading 3", level: 3 },
-  { label: "Heading 4", level: 4 },
-];
+const ImageWithActions = Image.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(ImageView);
+  },
+});
 
-const TEXT_COLORS = [
-  "#1d1b17","#4d453f","#735b25","#8b4513","#1a472a",
-  "#1e3a5f","#4b0082","#8b0000","#006400","#c8860a",
-];
+const AttachmentWithActions = ArticleAttachment.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(ArticleAttachmentView);
+  },
+});
 
-const HIGHLIGHT_COLORS = [
-  "#fef08a","#bbf7d0","#bfdbfe","#fecaca","#e9d5ff",
-  "#fed7aa","#f0abfc","#99f6e4","#fde68a","transparent",
-];
-
-interface ToolbarButtonProps {
-  active?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  title?: string;
-  disabled?: boolean;
-}
-
-function ToolbarBtn({ active, onClick, children, title, disabled }: ToolbarButtonProps) {
-  return (
-    <button
-      title={title}
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        "w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all",
-        active
-          ? "bg-secondary-container/60 text-on-secondary-container"
-          : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-        disabled && "opacity-30 cursor-not-allowed"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function ToolbarSep() {
-  return <div className="w-px h-5 bg-outline-variant/30 mx-1" />;
-}
-
-function PublishDialog({ onClose, onPublish, saving }: { onClose: () => void; onPublish: (data: { title: string; summary: string; tags: string }) => void; saving: boolean }) {
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [tags, setTags] = useState("");
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-        className="elevated-surface-strong rounded-2xl w-full max-w-md p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="font-bold font-manrope text-on-surface text-lg">Publish Article</h2>
-            <p className="text-xs text-on-surface-variant mt-0.5">This will create a new edition</p>
-          </div>
-          <button onClick={onClose}><X className="h-5 w-5 text-on-surface-variant" /></button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-on-surface block mb-1.5">Title *</label>
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Article title…" className="input-field" />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-on-surface block mb-1.5">Summary</label>
-            <textarea value={summary} onChange={e => setSummary(e.target.value)} rows={2} placeholder="Brief summary…" className="input-field resize-none" />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-on-surface block mb-1.5">Tags (comma separated)</label>
-            <input value={tags} onChange={e => setTags(e.target.value)} placeholder="e.g. family-law, custody, human-rights" className="input-field" />
-          </div>
-          <p className="text-xs text-on-surface-variant">Articles are free to read — part of the open library of THE LAW With Gracious.</p>
-          <button onClick={() => onPublish({ title, summary, tags })} disabled={!title.trim() || saving} className="btn-primary w-full py-3 text-sm gap-2">
-            {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Publishing…</> : <><Sparkles className="h-4 w-4" /> Publish Edition</>}
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
+type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 function EditorInner() {
   const { status } = useSession();
   const router = useRouter();
-  const articleSlug = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("article") : null;
+  const searchParams = useSearchParams();
+  const articleSlug = searchParams.get("article");
 
-  const [showPublish, setShowPublish] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [savedMsg, setSavedMsg] = useState("");
+  // ── Article state ──────────────────────────────────────────────────────────
+  const [title, setTitle] = useState("");
+  const [summary, setSummary] = useState("");
+  const [tags, setTags] = useState("");
+  const [referenceCourse, setReferenceCourse] = useState<CourseSummary | null>(null);
   const [wordCount, setWordCount] = useState(0);
-  const [headingOpen, setHeadingOpen] = useState(false);
-  const [colorOpen, setColorOpen] = useState(false);
-  const [highlightOpen, setHighlightOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  // ── Save state ─────────────────────────────────────────────────────────────
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [publishedMsg, setPublishedMsg] = useState("");
+
+  // ── Publish state ──────────────────────────────────────────────────────────
+  const [showPublish, setShowPublish] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [referenceError, setReferenceError] = useState(false);
+
+  // ── Pickers / uploads ──────────────────────────────────────────────────────
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [attachMode, setAttachMode] = useState<"reference" | "inline">("reference");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Autosave plumbing (refs keep timers/values out of stale closures) ─────
+  const slugRef = useRef<string | null>(null);
+  const titleRef = useRef(title);
+  const summaryRef = useRef(summary);
+  const tagsRef = useRef(tags);
+  const referenceRef = useRef<CourseSummary | null>(null);
+  const dirtyRef = useRef(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadedForRef = useRef<string | null>(null);
+  const suppressAutosaveRef = useRef(false);
+  const editorRef = useRef<ReturnType<typeof useEditor> | null>(null);
+
+  useEffect(() => { titleRef.current = title; }, [title]);
+  useEffect(() => { summaryRef.current = summary; }, [summary]);
+  useEffect(() => { tagsRef.current = tags; }, [tags]);
 
   useEffect(() => { if (status === "unauthenticated") router.push("/login"); }, [status, router]);
 
+  const persist = useCallback(async (immediate = false) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    if (!dirtyRef.current && !immediate) return;
+    if (!immediate && saveTimer.current) clearTimeout(saveTimer.current);
+    setSaveState("saving");
+    try {
+      const content = JSON.stringify(editor.getJSON());
+      let slug = slugRef.current;
+      if (!slug) {
+        const res = await fetch("/api/articles", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: titleRef.current.trim() || "Untitled draft" }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.slug) throw new Error(data.error || "Couldn't create the article.");
+        slug = data.slug;
+        slugRef.current = slug;
+        // The load effect must not clobber the document we just saved.
+        loadedForRef.current = slug;
+        router.replace(`/editor?article=${slug}`, { scroll: false });
+      }
+      const res = await fetch(`/api/articles/${slug}/draft`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content,
+          title: titleRef.current,
+          summary: summaryRef.current,
+          tags: tagsRef.current,
+          referenceCourseId: referenceRef.current?.id ?? null,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Couldn't save the draft.");
+      dirtyRef.current = false;
+      setSaveState("saved");
+      setSavedAt(new Date());
+    } catch (err) {
+      setSaveState("error");
+    }
+  }, [router]);
+
+  const persistRef = useRef(persist);
+  useEffect(() => { persistRef.current = persist; }, [persist]);
+
+  const markDirty = useCallback(() => {
+    dirtyRef.current = true;
+    setSaveState("dirty");
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => { persistRef.current(true); }, 1200);
+  }, []);
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: {
+          openOnClick: false,
+          autolink: true,
+          defaultProtocol: "https",
+          HTMLAttributes: { rel: "noopener noreferrer nofollow", target: "_blank" },
+        },
+      }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       TextStyle,
       Color,
+      FontSize,
       Underline,
       Highlight.configure({ multicolor: true }),
       Typography,
       TaskList,
       TaskItem.configure({ nested: true }),
-      Image.configure({ inline: false, allowBase64: true }),
+      ImageWithActions.configure({ inline: false, allowBase64: true }),
+      AttachmentWithActions,
       Placeholder.configure({ placeholder: "Start writing your article…" }),
       CharacterCount,
     ],
     editorProps: { attributes: { class: "tiptap-editor focus:outline-none" } },
-    onUpdate: ({ editor }) => {
-      setWordCount(editor.storage.characterCount.words());
+    onCreate: ({ editor: ed }) => {
+      editorRef.current = ed;
+    },
+    onUpdate: ({ editor: ed }) => {
+      if (suppressAutosaveRef.current) return;
+      setWordCount(ed.storage.characterCount.words());
+      markDirty();
     },
   });
 
+  useEffect(() => { editorRef.current = editor; }, [editor]);
+
+  // ── Load an existing article (or its draft) ────────────────────────────────
   useEffect(() => {
     if (!editor || !articleSlug) return;
-    fetch(`/api/articles/${articleSlug}`).then(r => r.json()).then(data => {
-      const latestEdition = data.editions?.[0];
-      if (latestEdition?.content) {
-        try { editor.commands.setContent(JSON.parse(latestEdition.content)); } catch { editor.commands.setContent(latestEdition.content); }
+    if (loadedForRef.current === articleSlug) return; // just saved it
+    loadedForRef.current = articleSlug;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/articles/${articleSlug}`);
+        const data = await res.json();
+        if (data.error || !data.id) {
+          router.push("/articles");
+          return;
+        }
+        slugRef.current = articleSlug;
+        setTitle(data.title ?? "");
+        setSummary(data.summary ?? "");
+        setTags(Array.isArray(data.tags) ? data.tags.join(", ") : "");
+        if (data.referenceCourse) {
+          const rc = data.referenceCourse as CourseSummary;
+          setReferenceCourse(rc);
+          referenceRef.current = rc;
+        }
+
+        // Prefer the in-progress draft; fall back to the latest published edition.
+        let content: string | null = null;
+        const draftRes = await fetch(`/api/articles/${articleSlug}/draft`).catch(() => null);
+        if (draftRes?.ok) {
+          const draft = await draftRes.json().catch(() => ({}));
+          if (draft.content) content = draft.content;
+        }
+        if (!content && data.editions?.[0]?.content) content = data.editions[0].content;
+        if (content) {
+          suppressAutosaveRef.current = true;
+          try { editor.commands.setContent(JSON.parse(content)); }
+          catch { editor.commands.setContent(content); }
+          suppressAutosaveRef.current = false;
+          setWordCount(editor.storage.characterCount.words());
+        }
+      } catch {
+        router.push("/articles");
+      } finally {
+        setLoaded(true);
       }
-    });
-  }, [editor, articleSlug]);
+    })();
+  }, [editor, articleSlug, router]);
 
-  const insertImage = async (file: File) => {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    const data = await res.json();
-    if (data.url && editor) editor.chain().focus().setImage({ src: data.url }).run();
-  };
+  // ── Flush pending changes when the page is hidden/unloaded ─────────────────
+  useEffect(() => {
+    const flush = () => {
+      const ed = editorRef.current;
+      if (!dirtyRef.current || !ed) return;
+      const slug = slugRef.current;
+      if (!slug) return;
+      const payload = JSON.stringify({
+        content: JSON.stringify(ed.getJSON()),
+        title: titleRef.current,
+        summary: summaryRef.current,
+        tags: tagsRef.current,
+        referenceCourseId: referenceRef.current?.id ?? null,
+      });
+      navigator.sendBeacon(`/api/articles/${slug}/draft`, new Blob([payload], { type: "application/json" }));
+    };
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
+    };
+  }, []);
 
-  const publishArticle = async (meta: { title: string; summary: string; tags: string }) => {
+  // ── Cmd/Ctrl+S saves immediately ────────────────────────────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        persistRef.current(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // ── Expose the inline picker to attachment NodeViews (replace action) ──────
+  useEffect(() => {
+    editorActions.openInlinePicker = () => { setAttachMode("inline"); setAttachOpen(true); };
+  }, []);
+
+  // ── Reference course ───────────────────────────────────────────────────────
+  const openReferencePicker = useCallback(() => {
+    setPublishError(null);
+    setReferenceError(false);
+    setAttachMode("reference");
+    setAttachOpen(true);
+    setShowPublish(false);
+  }, []);
+
+  /** Insert (or replace the selected) attachment node with the given content. */
+  const insertAttachment = useCallback((attrs: { type: string; id: string; slug: string; title: string; subtitle: string; url: string }) => {
+    const editor = editorRef.current;
     if (!editor) return;
+    const sel = editor.state.selection as unknown as { node?: { type: { name: string } } };
+    if (sel?.node?.type?.name === "articleAttachment") {
+      editor.chain().focus().updateArticleAttachment(attrs).run();
+    } else {
+      editor.chain().focus().setArticleAttachment(attrs).run();
+    }
+  }, []);
+
+  const handleSelectCourse = useCallback((course: CourseSummary) => {
+    if (attachMode === "reference") {
+      referenceRef.current = course;
+      setReferenceCourse(course);
+      setReferenceError(false);
+      persistRef.current(true);
+    } else {
+      insertAttachment(courseAttachment(course));
+    }
+  }, [attachMode, insertAttachment]);
+
+  const handleSelectMaterial = useCallback((material: MaterialSummary) => {
+    if (attachMode === "inline") insertAttachment(materialAttachment(material));
+  }, [attachMode, insertAttachment]);
+
+  const handleRemoveReference = useCallback(() => {
+    referenceRef.current = null;
+    setReferenceCourse(null);
+    persistRef.current(true);
+  }, []);
+
+  // ── Images ──────────────────────────────────────────────────────────────────
+  const insertImage = useCallback(async (file: File) => {
+    if (!editorRef.current) return;
+    if (!file.type.startsWith("image/")) { setUploadError("Please choose an image file."); return; }
+    if (file.size > 10 * 1024 * 1024) { setUploadError("Images must be under 10 MB."); return; }
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "The image couldn't be uploaded.");
+      editorRef.current.chain().focus().setImage({ src: data.url, alt: file.name }).run();
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "The image couldn't be uploaded. Try again.");
+    } finally {
+      setUploading(false);
+    }
+  }, []);
+
+  // ── Publish ─────────────────────────────────────────────────────────────────
+  const publishArticle = useCallback(async (meta: { title: string; summary: string; tags: string }) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    // Frontend gate — the server re-validates.
+    if (!referenceRef.current) {
+      setReferenceError(true);
+      setPublishError("A reference course is required before publishing.");
+      setShowPublish(false);
+      setAttachMode("reference");
+      setAttachOpen(true);
+      return;
+    }
+
     setSaving(true);
+    setPublishError(null);
     try {
       const content = JSON.stringify(editor.getJSON());
-      let slug = articleSlug;
+      const tagsArr = meta.tags.split(",").map(t => t.trim()).filter(Boolean);
+
+      let slug = slugRef.current;
       if (!slug) {
         const res = await fetch("/api/articles", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: meta.title, summary: meta.summary, tags: meta.tags.split(",").map(t => t.trim()).filter(Boolean) }),
+          body: JSON.stringify({ title: meta.title.trim() }),
         });
-        const article = await res.json();
-        slug = article.slug;
-      } else {
-        await fetch(`/api/articles/${slug}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: meta.title, summary: meta.summary, isPublished: true, tags: meta.tags.split(",").map(t => t.trim()).filter(Boolean) }),
-        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.slug) throw new Error(data.error || "Couldn't create the article.");
+        slug = data.slug;
+        slugRef.current = slug;
       }
-      await fetch(`/api/articles/${slug}/editions`, {
+
+      // Persist content + metadata (including the reference) before publishing.
+      const draftRes = await fetch(`/api/articles/${slug}/draft`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content,
+          title: meta.title,
+          summary: meta.summary,
+          tags: tagsArr,
+          referenceCourseId: referenceRef.current.id,
+        }),
+      });
+      const draftData = await draftRes.json().catch(() => ({}));
+      if (!draftRes.ok) throw new Error(draftData.error || "Couldn't save the article before publishing.");
+
+      // Server-side reference validation happens here.
+      const edRes = await fetch(`/api/articles/${slug}/editions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
-      await fetch(`/api/articles/${slug}`, {
+      const edData = await edRes.json().catch(() => ({}));
+      if (!edRes.ok) throw new Error(edData.error || "Couldn't publish the edition.");
+
+      const pubRes = await fetch(`/api/articles/${slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPublished: true }),
       });
+      const pubData = await pubRes.json().catch(() => ({}));
+      if (!pubRes.ok) throw new Error(pubData.error || "Couldn't mark the article as published.");
+
+      // The published edition is now the source of truth — drop the draft.
+      await fetch(`/api/articles/${slug}/draft`, { method: "DELETE" }).catch(() => {});
+
+      dirtyRef.current = false;
       setShowPublish(false);
-      setSavedMsg("Published!");
-      setTimeout(() => setSavedMsg(""), 3000);
-      if (!articleSlug && slug) router.replace(`/editor?article=${slug}`);
+      setSaveState("saved");
+      setSavedAt(new Date());
+      loadedForRef.current = slug;
+      if (slug !== articleSlug) router.replace(`/editor?article=${slug}`, { scroll: false });
+      if (slug) setPublishedMsg(slug);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong while publishing.";
+      setPublishError(msg);
+      setShowPublish(true);
+      // A reference problem sends the author straight back to the attachment control.
+      if (/reference course/i.test(msg)) {
+        setShowPublish(false);
+        setAttachMode("reference");
+        setAttachOpen(true);
+      }
     } finally {
       setSaving(false);
     }
-  };
+  }, [articleSlug, router]);
 
-  if (!editor) return (
-    <div className="min-h-screen app-ambient-bg flex items-center justify-center">
-      <Navbar />
-      <div className="spinner spinner-lg" />
-    </div>
+  const handlePublishClick = useCallback(() => {
+    setReferenceError(false);
+    if (!referenceRef.current) {
+      setReferenceError(true);
+      setAttachMode("reference");
+      setAttachOpen(true);
+      return;
+    }
+    setPublishError(null);
+    setShowPublish(true);
+  }, []);
+
+  // ── Rendering ───────────────────────────────────────────────────────────────
+  if (!editor || !loaded) {
+    return (
+      <div className="min-h-screen app-ambient-bg flex items-center justify-center">
+        <Navbar />
+        <div className="spinner spinner-lg" />
+      </div>
+    );
+  }
+
+  const saveLabel =
+    saveState === "saving" ? "Saving…" :
+    saveState === "dirty" ? "Saving…" :
+    saveState === "error" ? "Save failed" :
+    saveState === "saved" && savedAt ? `Saved ${savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` :
+    "Not saved yet";
+
+  const rightSlot = (
+    <>
+      {/* Save status */}
+      <div
+        className={cn(
+          "flex items-center gap-1.5 text-[11px] font-medium whitespace-nowrap",
+          saveState === "error" ? "text-error" : "text-on-surface-variant"
+        )}
+        aria-live="polite"
+      >
+        {saveState === "saving" || saveState === "dirty" ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5 animate-spin sm:hidden" />
+            <span className="hidden sm:inline"><Loader2 className="h-3.5 w-3.5 animate-spin inline mr-1" />{saveLabel}</span>
+          </>
+        ) : saveState === "error" ? (
+          <>
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <button type="button" onClick={() => persistRef.current(true)} className="underline hover:text-error/80">Retry</button>
+          </>
+        ) : saveState === "saved" ? (
+          <>
+            <Check className={cn("text-secondary", "sm:hidden h-3.5 w-3.5")} />
+            <span className="hidden sm:inline"><Check className="h-3.5 w-3.5 text-secondary inline mr-1" />{saveLabel}</span>
+          </>
+        ) : (
+          <>
+            <Cloud className="h-3.5 w-3.5 sm:hidden" />
+            <span className="hidden sm:inline"><Cloud className="h-3.5 w-3.5 inline mr-1" />{saveLabel}</span>
+          </>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={handlePublishClick}
+        className="btn-primary px-4 py-2 text-xs gap-1.5 whitespace-nowrap"
+      >
+        <BookOpen className="h-3.5 w-3.5" /> Publish
+      </button>
+    </>
   );
-
-  const currentHeading = HEADINGS.find(h => h.level > 0 ? editor.isActive("heading", { level: h.level }) : !editor.isActive("heading")) || HEADINGS[0];
 
   return (
     <div className="min-h-screen app-ambient-bg">
       <Navbar />
 
-      {/* Editor Toolbar */}
-      <div className="fixed top-16 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-sm border-b border-outline-variant/15 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-2">
-          {/* Row 1 */}
-          <div className="flex items-center gap-0.5 flex-wrap">
-            {/* Heading dropdown */}
-            <div className="relative">
-              <button onClick={() => setHeadingOpen(v => !v)}
-                className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-medium text-on-surface hover:bg-surface-container transition-colors">
-                <Type className="h-3.5 w-3.5" />
-                {currentHeading.label}
-                <ChevronDown className="h-3 w-3 text-on-surface-variant" />
-              </button>
-              <AnimatePresence>
-                {headingOpen && (
-                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                    className="absolute top-10 left-0 z-50 elevated-surface-strong rounded-xl overflow-hidden min-w-[160px] py-1">
-                    {HEADINGS.map(h => (
-                      <button key={h.level} onClick={() => { if (h.level === 0) { editor.chain().focus().setParagraph().run(); } else { editor.chain().focus().toggleHeading({ level: h.level as 1|2|3|4 }).run(); } setHeadingOpen(false); }}
-                        className={cn("w-full text-left px-4 py-2 text-sm hover:bg-surface-container transition-colors", h.level === 0 ? "text-on-surface" : "", h.level === 1 ? "text-xl font-bold font-manrope" : "", h.level === 2 ? "text-lg font-bold font-manrope" : "", h.level === 3 ? "text-base font-semibold font-manrope" : "", h.level === 4 ? "text-sm font-semibold font-manrope" : "")}>
-                        {h.label}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <ToolbarSep />
-            <ToolbarBtn active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} title="Bold"><Bold className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} title="Italic"><Italic className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()} title="Underline"><UnderlineIcon className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()} title="Strikethrough"><Strikethrough className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarSep />
-            {/* Text color */}
-            <div className="relative">
-              <button onClick={() => setColorOpen(v => !v)} title="Text color"
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container transition-colors">
-                <div className="flex flex-col items-center gap-0.5">
-                  <span className="text-xs font-bold text-on-surface" style={{ fontSize: 11 }}>A</span>
-                  <div className="h-1 w-5 rounded-full" style={{ background: editor.getAttributes("textStyle").color || "rgb(var(--c-secondary))" }} />
-                </div>
-              </button>
-              <AnimatePresence>
-                {colorOpen && (
-                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                    className="absolute top-10 left-0 z-50 elevated-surface-strong rounded-xl p-3">
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {TEXT_COLORS.map(c => (
-                        <button key={c} onClick={() => { editor.chain().focus().setColor(c).run(); setColorOpen(false); }}
-                          className="w-6 h-6 rounded-full border-2 border-white/20 hover:scale-110 transition-transform"
-                          style={{ background: c }} />
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            {/* Highlight */}
-            <div className="relative">
-              <button onClick={() => setHighlightOpen(v => !v)} title="Highlight"
-                className={cn("w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-container transition-colors", editor.isActive("highlight") ? "bg-secondary-container/60" : "")}>
-                <Highlighter className="h-3.5 w-3.5 text-on-surface-variant" />
-              </button>
-              <AnimatePresence>
-                {highlightOpen && (
-                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                    className="absolute top-10 left-0 z-50 elevated-surface-strong rounded-xl p-3">
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {HIGHLIGHT_COLORS.map(c => (
-                        <button key={c} onClick={() => { if (c === "transparent") { editor.chain().focus().unsetHighlight().run(); } else { editor.chain().focus().setHighlight({ color: c }).run(); } setHighlightOpen(false); }}
-                          className="w-6 h-6 rounded border border-outline-variant/30 hover:scale-110 transition-transform text-[9px] font-bold"
-                          style={{ background: c || "white" }}>
-                          {c === "transparent" && "×"}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <ToolbarSep />
-            <ToolbarBtn active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()} title="Align left"><AlignLeft className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()} title="Center"><AlignCenter className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()} title="Align right"><AlignRight className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive({ textAlign: "justify" })} onClick={() => editor.chain().focus().setTextAlign("justify").run()} title="Justify"><AlignJustify className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarSep />
-            <ToolbarBtn active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet list"><List className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Ordered list"><ListOrdered className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive("taskList")} onClick={() => editor.chain().focus().toggleTaskList().run()} title="Task list"><CheckSquare className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarSep />
-            <ToolbarBtn active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Quote"><Quote className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive("code")} onClick={() => editor.chain().focus().toggleCode().run()} title="Inline code"><Code className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()} title="Code block"><Code className="h-4 w-4" /></ToolbarBtn>
-            <ToolbarBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider"><Minus className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarSep />
-            <ToolbarBtn onClick={() => fileInputRef.current?.click()} title="Insert image"><ImageIcon className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarSep />
-            <ToolbarBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo"><Undo className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo"><Redo className="h-3.5 w-3.5" /></ToolbarBtn>
-            <ToolbarSep />
-            <span className="text-[11px] text-on-surface-variant ml-1">{wordCount} words</span>
-            <div className="flex-1" />
-            {savedMsg && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-secondary font-medium mr-2">{savedMsg}</motion.span>}
-            <button onClick={() => setShowPublish(true)} className="btn-primary px-4 py-1.5 text-xs gap-1.5">
-              <BookOpen className="h-3.5 w-3.5" /> Publish Article
+      <Toolbar
+        editor={editor}
+        onInsertImage={() => fileInputRef.current?.click()}
+        onAttachInline={() => { setAttachMode("inline"); setAttachOpen(true); }}
+        rightSlot={rightSlot}
+      />
+
+      {/* Upload / save error banner */}
+      {(uploadError || (saveState === "error")) && (
+        <div className="fixed top-[8.5rem] left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md">
+          <div className="flex items-center gap-2.5 rounded-xl border border-error/40 bg-surface-container-lowest px-4 py-3 shadow-elevation-md">
+            <AlertTriangle className="h-4 w-4 text-error shrink-0" />
+            <p className="text-sm text-on-surface flex-1">
+              {uploadError || "Couldn't save your changes. Tap Retry in the toolbar or keep typing and we'll try again."}
+            </p>
+            <button
+              type="button"
+              onClick={() => { setUploadError(null); if (saveState === "error") persistRef.current(true); }}
+              aria-label="Dismiss"
+              className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"
+            >
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Published confirmation */}
+      {publishedMsg && (
+        <div className="fixed top-[8.5rem] left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md">
+          <div className="flex items-center gap-2.5 rounded-xl border border-secondary/40 bg-surface-container-lowest px-4 py-3 shadow-elevation-md">
+            <Check className="h-4 w-4 text-secondary shrink-0" />
+            <p className="text-sm text-on-surface flex-1">Article published!</p>
+            <Link href={`/articles/${publishedMsg}`} className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+              View <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setPublishedMsg("")}
+              aria-label="Dismiss"
+              className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Editor content */}
-      <div className="pt-32 pb-20">
-        <div className="max-w-3xl mx-auto px-6">
+      <div className="pt-4 pb-24">
+        <div className="max-w-3xl mx-auto px-4 md:px-6">
           {/* Back button */}
-          <div className="mb-8">
+          <div className="mb-6">
             <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-on-surface-variant hover:text-on-surface transition-colors">
               <ArrowLeft className="h-4 w-4" /> Back
             </button>
           </div>
 
+          {/* Reference course (required) */}
+          <div className="mb-6">
+            <ReferenceCourseBar
+              course={referenceCourse}
+              onAttach={openReferencePicker}
+              onRemove={handleRemoveReference}
+              error={referenceError}
+            />
+          </div>
+
+          {/* Title */}
+          <input
+            value={title}
+            onChange={e => { setTitle(e.target.value); markDirty(); }}
+            placeholder="Article title"
+            aria-label="Article title"
+            className="w-full bg-transparent outline-none font-serif font-bold text-3xl md:text-4xl text-on-surface placeholder:text-on-surface-variant/40 leading-tight mb-6"
+          />
+
           {/* Tiptap editor */}
           <div className="tiptap-editor min-h-[70vh]">
             <EditorContent editor={editor} />
           </div>
+
+          {wordCount > 0 && (
+            <p className="mt-10 text-[11px] text-on-surface-variant/70 border-t border-outline-variant/15 pt-4 flex items-center gap-4">
+              <span><PenLine className="h-3 w-3 inline mr-1" />{wordCount} words</span>
+              <span className="hidden sm:inline">Drafts autosave — you can leave anytime.</span>
+            </p>
+          )}
         </div>
       </div>
 
-      <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={e => e.target.files?.[0] && insertImage(e.target.files[0])} />
+      {/* Hidden image input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept="image/*"
+        onChange={e => {
+          const file = e.target.files?.[0];
+          if (file) insertImage(file);
+          e.target.value = "";
+        }}
+      />
 
-      <AnimatePresence>
-        {showPublish && <PublishDialog onClose={() => setShowPublish(false)} onPublish={publishArticle} saving={saving} />}
-      </AnimatePresence>
+      {/* Uploading indicator */}
+      {uploading && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] pb-safe">
+          <div className="flex items-center gap-2 rounded-full bg-surface-container-lowest border border-outline-variant/40 shadow-elevation-md px-4 py-2.5 text-sm text-on-surface">
+            <CloudUpload className="h-4 w-4 text-secondary animate-pulse" /> Uploading image…
+          </div>
+        </div>
+      )}
+
+      {/* Attachment picker (reference course or inline content) */}
+      <AttachmentPicker
+        open={attachOpen}
+        onClose={() => setAttachOpen(false)}
+        mode={attachMode}
+        onSelectCourse={handleSelectCourse}
+        onSelectMaterial={handleSelectMaterial}
+      />
+
+      {/* Publish dialog */}
+      <PublishDialog
+        open={showPublish}
+        onClose={() => setShowPublish(false)}
+        initialTitle={title}
+        initialSummary={summary}
+        initialTags={tags}
+        referenceCourse={referenceCourse}
+        saving={saving}
+        serverError={publishError}
+        onPublish={publishArticle}
+        onAttachReference={openReferencePicker}
+      />
     </div>
   );
 }

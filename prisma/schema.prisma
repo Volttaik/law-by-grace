@@ -93,12 +93,13 @@ model Course {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner     User             @relation("CourseOwner", fields: [ownerId], references: [id])
-  tags      CourseTag[]
-  modules   Module[]
-  materials Material[]
-  saves     SavedCourse[]
-  progress  LearningProgress[]
+  owner             User             @relation("CourseOwner", fields: [ownerId], references: [id])
+  tags              CourseTag[]
+  modules           Module[]
+  materials         Material[]
+  saves             SavedCourse[]
+  progress          LearningProgress[]
+  articleReferences Article[]        @relation("ArticleReferenceCourse")
 
   @@map("law_by_grace_courses")
 }
@@ -212,22 +213,37 @@ model LearningProgress {
 // ─── Articles ─────────────────────────────────────────────────────────────────
 
 model Article {
-  id          String           @id @default(cuid())
-  slug        String           @unique
-  title       String
-  summary     String?
-  authorId    String
-  isPublished Boolean          @default(false)
-  coverImage  String?
-  views       Int              @default(0)
-  likes       Int              @default(0)
-  tags        String           @default("[]")
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  author      User             @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  editions    ArticleEdition[]
+  id                String           @id @default(cuid())
+  slug              String           @unique
+  title             String
+  summary           String?
+  authorId          String
+  isPublished       Boolean          @default(false)
+  coverImage        String?
+  views             Int              @default(0)
+  likes             Int              @default(0)
+  tags              String           @default("[]")
+  referenceCourseId String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  author            User             @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  editions          ArticleEdition[]
+  draft             ArticleDraft?
+  referenceCourse   Course?          @relation("ArticleReferenceCourse", fields: [referenceCourseId], references: [id], onDelete: SetNull)
 
   @@map("law_by_grace_articles")
+}
+
+// In-progress editor content for an article, kept separate from published
+// editions so autosaved drafts never leak into the published article.
+model ArticleDraft {
+  id        String   @id @default(cuid())
+  articleId String   @unique
+  content   String
+  updatedAt DateTime @updatedAt
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("law_by_grace_article_drafts")
 }
 
 model ArticleEdition {
