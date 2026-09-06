@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import {
   Search, Menu, X, ChevronDown,
   Settings, LogOut, User, LayoutDashboard, Moon, Sun,
-  Compass, BookOpen, Scale, Palette, PenLine,
+  Compass, BookOpen, Scale, Palette, PenLine, FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -96,8 +96,7 @@ export default function Navbar() {
     {
       label: "Library",
       items: [
-        { href: "/explore", label: "Discover", icon: Compass, desc: "Browse legal courses & resources" },
-        { href: "/articles", label: "Articles", icon: BookOpen, desc: "Read legal articles" },
+        { href: "/explore", label: "Discover", icon: Compass, desc: "Browse legal courses & resources" },                { href: "/articles", label: "Articles", icon: BookOpen, desc: "Read legal articles" },
         { href: "/search", label: "Search", icon: Search, desc: "Search the whole library" },
       ],
     },
@@ -144,19 +143,37 @@ export default function Navbar() {
       </div>
       <nav className="flex-1 px-3 py-3 overflow-y-auto">
         {isAuth && (
-          <Link
-            href="/editor"
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all mb-4 border",
-              pathname?.startsWith("/editor")
-                ? "bg-primary/10 text-primary border-primary/20"
-                : "bg-primary text-on-primary hover:brightness-110 border-primary"
-            )}
-          >
-            <PenLine className="w-4 h-4 shrink-0" />
-            Create Article
-          </Link>
+          <div className="mb-4">
+            <p className="px-3 pb-1.5 text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest">Articles</p>
+            <div className="space-y-1">
+              <Link
+                href="/editor"
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all border",
+                  pathname?.startsWith("/editor")
+                    ? "bg-primary/10 text-primary border-primary/20"
+                    : "bg-primary text-on-primary hover:brightness-110 border-primary"
+                )}
+              >
+                <PenLine className="w-4 h-4 shrink-0" />
+                Create Article
+              </Link>
+              <Link
+                href="/articles/manage"
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all border",
+                  pathname?.startsWith("/articles/manage")
+                    ? "bg-primary/10 text-primary border-primary/20"
+                    : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-transparent"
+                )}
+              >
+                <FileText className="w-4 h-4 shrink-0" />
+                Manage Articles
+              </Link>
+            </div>
+          </div>
         )}
         {sections.map((section, si) => (
           <div key={section.label} className={si > 0 ? "mt-5" : ""}>
@@ -232,7 +249,7 @@ export default function Navbar() {
               href="/articles"
               className={cn(
                 "text-sm font-medium transition-colors flex items-center gap-1.5",
-                pathname?.startsWith("/articles") ? "text-primary font-semibold" : "text-on-surface-variant hover:text-primary"
+                pathname?.startsWith("/articles") && !pathname?.startsWith("/articles/manage") ? "text-primary font-semibold" : "text-on-surface-variant hover:text-primary"
               )}
             >
               <BookOpen className="w-4 h-4" />Articles
@@ -298,6 +315,7 @@ export default function Navbar() {
                       </div>
                       {[
                         { href: "/editor", label: "Create Article", icon: PenLine },
+                        { href: "/articles/manage", label: "Manage Articles", icon: FileText },
                         { href: "/explore", label: "Discover", icon: Compass },
                         { href: "/articles", label: "Articles", icon: BookOpen },
                         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -363,10 +381,13 @@ export default function Navbar() {
           >
             <div className="space-y-1">
               {isAuth && (
-                <MobileLink href="/editor" label="Create Article" icon={PenLine} onClick={() => setMobileOpen(false)} active={pathname?.startsWith("/editor")} highlighted />
+                <>
+                  <MobileLink href="/editor" label="Create Article" icon={PenLine} onClick={() => setMobileOpen(false)} active={pathname?.startsWith("/editor")} highlighted />
+                  <MobileLink href="/articles/manage" label="Manage Articles" icon={FileText} onClick={() => setMobileOpen(false)} active={pathname?.startsWith("/articles/manage")} />
+                </>
               )}
               <MobileLink href="/explore" label="Discover" icon={Compass} onClick={() => setMobileOpen(false)} active={pathname === "/explore"} />
-              <MobileLink href="/articles" label="Articles" icon={BookOpen} onClick={() => setMobileOpen(false)} active={pathname?.startsWith("/articles")} />
+              <MobileLink href="/articles" label="Articles" icon={BookOpen} onClick={() => setMobileOpen(false)} active={pathname?.startsWith("/articles") && !pathname?.startsWith("/articles/manage")} />
               <MobileLink href="/search" label="Search" icon={Search} onClick={() => setMobileOpen(false)} active={pathname === "/search"} />
               {isAuth ? (
                 <>

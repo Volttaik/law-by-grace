@@ -124,6 +124,9 @@ export async function PATCH(req: Request, { params }: { params: { slug: string }
 export async function DELETE(_: Request, { params }: { params: { slug: string } }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  await prisma.article.deleteMany({ where: { slug: params.slug, authorId: session.user.id } });
+  // Ownership is enforced in the query itself: a non-owner's slug matches
+  // nothing, so the delete simply doesn't happen (404, not a false success).
+  const res = await prisma.article.deleteMany({ where: { slug: params.slug, authorId: session.user.id } });
+  if (res.count === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ deleted: true });
 }
