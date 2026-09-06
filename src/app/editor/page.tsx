@@ -161,6 +161,13 @@ function EditorInner() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Couldn't save the draft.");
+      // The server regenerates the slug when a real title replaces the
+      // "Untitled draft" placeholder — follow it so the URL stays correct.
+      if (typeof data.slug === "string" && data.slug && data.slug !== slug) {
+        slugRef.current = data.slug;
+        loadedForRef.current = data.slug;
+        router.replace(`/editor?article=${data.slug}`, { scroll: false });
+      }
       dirtyRef.current = false;
       setSaveState("saved");
       setSavedAt(new Date());
